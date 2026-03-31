@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Sun Proactive — Дашборд куратора</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#080808;--sidebar:#0d0d0d;--card:#141414;--card2:#1a1a1a;--card3:#111111;
+  --text:#f0ede8;--sub:#505050;--sub2:#3a3a3a;--border:#1e1e1e;--border2:#252525;--input-bg:#0f0f0f;
+  --accent:#10b981;--accent-bg:rgba(16,185,129,0.08);--accent-bg2:rgba(16,185,129,0.15);--accent-border:rgba(16,185,129,0.2);
+  --red:#ef4444;--red-bg:rgba(239,68,68,0.08);--red-border:rgba(239,68,68,0.2);
+  --amber:#f59e0b;--amber-bg:rgba(245,158,11,0.08);--amber-border:rgba(245,158,11,0.2);
+  --indigo:#818cf8;--indigo-bg:rgba(99,102,241,0.08);--indigo-border:rgba(99,102,241,0.2);
+  --shadow:0 2px 16px rgba(0,0,0,0.4);
+}
+body.light{
+  --bg:#f4f7f5;--sidebar:#ffffff;--card:#ffffff;--card2:#f0f5f2;--card3:#fafcfb;
+  --text:#111111;--sub:#9ca3af;--sub2:#d1d5db;--border:#e5ede9;--border2:#dce8e2;--input-bg:#f5f9f7;
+  --accent:#059669;--accent-bg:rgba(5,150,105,0.07);--accent-bg2:rgba(5,150,105,0.14);--accent-border:rgba(5,150,105,0.2);
+  --red:#dc2626;--red-bg:rgba(220,38,38,0.07);--red-border:rgba(220,38,38,0.2);
+  --amber:#d97706;--amber-bg:rgba(217,119,6,0.07);--amber-border:rgba(217,119,6,0.2);
+  --indigo:#4f46e5;--indigo-bg:rgba(79,70,229,0.07);--indigo-border:rgba(79,70,229,0.2);
+  --shadow:0 1px 8px rgba(0,0,0,0.07);
+}
+html,body{height:100%;font-family:'DM Sans','Helvetica Neue',sans-serif;background:var(--bg);color:var(--text);transition:background 0.3s,color 0.3s;}
+.layout{display:flex;min-height:100vh;}
+.sidebar{width:220px;min-height:100vh;background:var(--sidebar);border-right:1px solid var(--border);padding:20px 14px;display:flex;flex-direction:column;gap:2px;position:sticky;top:0;flex-shrink:0;transition:background 0.3s,border-color 0.3s;}
+.logo{display:flex;align-items:center;gap:9px;padding:0 8px;margin-bottom:24px;}
+.logo-box{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 45%,transparent));display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.logo-text{font-size:13px;font-weight:700;color:var(--text);}
+.logo-badge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border);margin-left:2px;}
+.nav-section{font-size:10px;font-weight:700;color:var(--sub2);letter-spacing:0.8px;padding:0 8px;margin:14px 0 5px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:12.5px;font-weight:400;color:var(--sub);border:1px solid transparent;transition:all 0.15s;background:transparent;text-decoration:none;width:100%;}
+.nav-item.active{background:var(--accent-bg);color:var(--accent);font-weight:600;border-color:var(--accent-border);}
+.nav-item:hover:not(.active){background:var(--card2);color:var(--text);}
+.nav-item .badge{margin-left:auto;background:var(--red-bg);color:var(--red);border:1px solid var(--red-border);font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;}
+.nav-item .badge.green{background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border);}
+.sidebar-bottom{margin-top:auto;display:flex;flex-direction:column;gap:4px;padding-top:14px;border-top:1px solid var(--border);}
+.theme-btn{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--sub);font-size:12.5px;font-family:inherit;width:100%;transition:all 0.15s;}
+.theme-btn:hover{background:var(--card2);}
+.main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;}
+.topbar{padding:16px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--sidebar);position:sticky;top:0;z-index:20;transition:background 0.3s,border-color 0.3s;}
+.topbar-left{display:flex;flex-direction:column;gap:1px;}
+.topbar-title{font-size:15px;font-weight:700;color:var(--text);}
+.topbar-sub{font-size:11.5px;color:var(--sub);}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.notif-btn{width:34px;height:34px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--sub);cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;transition:all 0.15s;}
+.notif-btn:hover{background:var(--card2);color:var(--text);}
+.notif-dot{position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--red);border:1.5px solid var(--sidebar);}
+.curator-chip{display:flex;align-items:center;gap:7px;padding:5px 10px 5px 5px;border-radius:20px;background:var(--card2);border:1px solid var(--border);cursor:pointer;text-decoration:none;transition:all 0.15s;}
+.curator-chip:hover{border-color:var(--border2);background:var(--card);}
+.curator-avatar{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--amber),color-mix(in srgb,var(--amber) 50%,transparent));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;}
+.curator-name{font-size:12px;font-weight:600;color:var(--text);}
+.curator-role{font-size:10px;color:var(--sub);}
+.body{padding:22px 24px;flex:1;overflow-y:auto;}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.kpi-card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:16px 18px;display:flex;flex-direction:column;gap:10px;transition:border-color 0.2s,box-shadow 0.2s;cursor:default;}
+.kpi-card:hover{border-color:var(--border2);box-shadow:var(--shadow);}
+.kpi-top{display:flex;align-items:center;justify-content:space-between;}
+.kpi-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.kpi-delta{font-size:11px;font-weight:600;padding:2px 7px;border-radius:6px;}
+.kpi-delta.up{background:var(--accent-bg);color:var(--accent);}
+.kpi-delta.down{background:var(--red-bg);color:var(--red);}
+.kpi-delta.neutral{background:var(--amber-bg);color:var(--amber);}
+.kpi-val{font-size:26px;font-weight:700;color:var(--text);letter-spacing:-0.5px;line-height:1;}
+.kpi-label{font-size:11.5px;color:var(--sub);}
+.two-col{display:grid;grid-template-columns:1fr 340px;gap:16px;margin-bottom:20px;}
+.section-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.section-head{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.section-title{font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px;}
+.section-count{font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;background:var(--card2);color:var(--sub);border:1px solid var(--border);}
+.section-action{font-size:11.5px;color:var(--accent);cursor:pointer;font-weight:500;background:none;border:none;font-family:inherit;text-decoration:none;display:inline-block;}
+.section-action:hover{text-decoration:underline;}
+.vol-list{display:flex;flex-direction:column;}
+.vol-row{display:grid;grid-template-columns:36px 1fr 140px 90px 80px 40px;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid var(--border);transition:background 0.12s;cursor:pointer;}
+.vol-row:last-child{border-bottom:none;}
+.vol-row:hover:not(.header){background:var(--card2);}
+.vol-row.header{padding:8px 18px;background:var(--card3);cursor:default;}
+.vol-row.header .col-label{font-size:10.5px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:0.5px;}
+.vol-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+.vol-name{font-size:13px;font-weight:600;color:var(--text);}
+.vol-skills{font-size:11px;color:var(--sub);margin-top:1px;}
+.status-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:600;white-space:nowrap;}
+.status-active{background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border);}
+.status-pending{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border);}
+.status-new{background:var(--indigo-bg);color:var(--indigo);border:1px solid var(--indigo-border);}
+.status-inactive{background:var(--card2);color:var(--sub);border:1px solid var(--border);}
+.vol-score{font-size:13px;font-weight:700;}
+.vol-score.high{color:var(--accent);}
+.vol-score.mid{color:var(--amber);}
+.vol-score.low{color:var(--sub);}
+.vol-hours{font-size:12px;color:var(--sub);}
+.action-btn{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--sub);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;font-size:13px;}
+.action-btn:hover{background:var(--accent-bg);border-color:var(--accent-border);color:var(--accent);}
+.app-list{display:flex;flex-direction:column;}
+.app-item{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px;transition:background 0.12s;cursor:pointer;}
+.app-item:last-child{border-bottom:none;}
+.app-item:hover{background:var(--card2);}
+.app-item-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+.app-title{font-size:12.5px;font-weight:600;color:var(--text);line-height:1.35;}
+.app-time{font-size:10.5px;color:var(--sub);white-space:nowrap;flex-shrink:0;margin-top:1px;}
+.app-meta{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--sub);}
+.app-match{font-size:11px;font-weight:700;color:var(--accent);}
+.app-actions{display:flex;gap:5px;}
+.btn-approve{padding:5px 11px;border-radius:7px;border:none;background:var(--accent);color:#fff;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.15s;}
+.btn-approve:hover{filter:brightness(1.1);}
+.btn-reject{padding:5px 11px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--sub);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.15s;}
+.btn-reject:hover{border-color:var(--red-border);color:var(--red);background:var(--red-bg);}
+.feed-list{display:flex;flex-direction:column;}
+.feed-item{padding:11px 16px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start;}
+.feed-item:last-child{border-bottom:none;}
+.feed-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.feed-dot.green{background:var(--accent);}
+.feed-dot.amber{background:var(--amber);}
+.feed-dot.red{background:var(--red);}
+.feed-dot.blue{background:var(--indigo);}
+.feed-text{font-size:12px;color:var(--sub);line-height:1.45;flex:1;}
+.feed-text strong{color:var(--text);font-weight:600;}
+.feed-time{font-size:10.5px;color:var(--sub2);flex-shrink:0;white-space:nowrap;margin-top:1px;}
+.bottom-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+.task-list{display:flex;flex-direction:column;}
+.task-row{display:grid;grid-template-columns:1fr 90px 80px 70px 36px;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border);transition:background 0.12s;cursor:pointer;}
+.task-row:last-child{border-bottom:none;}
+.task-row.header{padding:7px 16px;background:var(--card3);cursor:default;}
+.task-row:not(.header):hover{background:var(--card2);}
+.task-name{font-size:12.5px;font-weight:500;color:var(--text);line-height:1.3;}
+.task-cat{font-size:10.5px;color:var(--sub);margin-top:1px;}
+.quota-mini{display:flex;flex-direction:column;gap:3px;}
+.quota-bar-sm{height:3px;background:var(--border);border-radius:3px;overflow:hidden;width:100%;}
+.quota-fill-sm{height:100%;border-radius:3px;background:var(--accent);}
+.quota-fill-sm.warn{background:var(--amber);}
+.quota-fill-sm.full{background:var(--red);}
+.quota-nums{font-size:10.5px;color:var(--sub);}
+.alert-list{display:flex;flex-direction:column;}
+.alert-item{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start;}
+.alert-item:last-child{border-bottom:none;}
+.alert-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.alert-body{flex:1;}
+.alert-title{font-size:12.5px;font-weight:600;color:var(--text);margin-bottom:2px;}
+.alert-desc{font-size:11.5px;color:var(--sub);line-height:1.4;}
+.alert-action{font-size:11px;color:var(--accent);cursor:pointer;font-weight:600;margin-top:4px;display:inline-block;}
+.alert-time{font-size:10.5px;color:var(--sub2);flex-shrink:0;white-space:nowrap;}
+.chart-wrap{padding:16px 18px 18px;}
+.chart-legend{display:flex;gap:14px;margin-bottom:14px;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--sub);}
+.legend-dot{width:8px;height:8px;border-radius:50%;}
+.bar-chart{display:flex;align-items:flex-end;gap:8px;height:100px;}
+.bar-group{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;}
+.bar-pair{display:flex;gap:3px;align-items:flex-end;height:90px;}
+.bar{border-radius:4px 4px 0 0;min-width:14px;transition:filter 0.15s;}
+.bar:hover{filter:brightness(1.2);}
+.bar-label{font-size:9.5px;color:var(--sub);}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+@media(max-width:1100px){.kpi-row{grid-template-columns:repeat(2,1fr);}.two-col{grid-template-columns:1fr;}.bottom-row{grid-template-columns:1fr;}}
+@media(max-width:700px){.sidebar{width:56px;}.logo-text,.logo-badge,.nav-item span:not(:first-child),.nav-section{display:none;}.logo{justify-content:center;}.nav-item{justify-content:center;padding:8px;}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+.kpi-card{animation:fadeIn 0.35s ease both;}
+.kpi-card:nth-child(1){animation-delay:0.05s;}
+.kpi-card:nth-child(2){animation-delay:0.1s;}
+.kpi-card:nth-child(3){animation-delay:0.15s;}
+.kpi-card:nth-child(4){animation-delay:0.2s;}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- ═══ SIDEBAR ═══ -->
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-box">☀️</div>
+    <div class="logo-text">Sun Proactive <span class="logo-badge">Куратор</span></div>
+  </div>
+
+  <div class="nav-section">Главное</div>
+  <a class="nav-item active" href="curator-dashboard.html">
+    <span></span><span>Дашборд</span>
+  </a>
+  <a class="nav-item" href="curator-tasks.html">
+    <span></span><span>Лента задач</span>
+  </a>
+  <a class="nav-item" href="curator-applications.html">
+    <span></span><span>Отклики</span><span class="badge">5</span>
+  </a>
+
+  <div class="nav-section">Управление</div>
+  <a class="nav-item" href="curator-volunteers.html">
+    <span></span><span>Волонтёры</span><span class="badge green">24</span>
+  </a>
+  <a class="nav-item" href="curator-events.html">
+    <span></span><span>Мероприятия</span>
+  </a>
+  <a class="nav-item" href="curator-analytics.html">
+    <span></span><span>Аналитика</span>
+  </a>
+
+  <div class="nav-section">Настройки</div>
+  <a class="nav-item" href="curator-profile.html">
+    <span></span><span>Мой профиль</span>
+  </a>
+  <a class="nav-item" href="curator-settings.html">
+    <span></span><span>Настройки</span>
+  </a>
+
+  <div class="sidebar-bottom">
+    <button class="theme-btn" onclick="toggleTheme()">
+      <svg id="theme-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <span>Светлая тема</span>
+    </button>
+  </div>
+</div>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-title">Дашборд куратора</div>
+      <div class="topbar-sub">Sun Proactive · Алматы · Апрель 2026</div>
+    </div>
+    <div class="topbar-right">
+      <button class="notif-btn" title="Уведомления">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <div class="notif-dot"></div>
+      </button>
+      <a class="curator-chip" href="curator-profile.html">
+        <div class="curator-avatar">АК</div>
+        <div>
+          <div class="curator-name">Айгерим К.</div>
+          <div class="curator-role">Куратор</div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="body">
+
+    <!-- KPI Row -->
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <div class="kpi-icon" style="background:var(--accent-bg);">👥</div>
+          <div class="kpi-delta up">+3 за неделю</div>
+        </div>
+        <div class="kpi-val">24</div>
+        <div class="kpi-label">Активных волонтёров</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <div class="kpi-icon" style="background:var(--indigo-bg);">📋</div>
+          <div class="kpi-delta neutral">6 активных</div>
+        </div>
+        <div class="kpi-val">6</div>
+        <div class="kpi-label">Открытых задач</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <div class="kpi-icon" style="background:var(--amber-bg);">📩</div>
+          <div class="kpi-delta down">5 новых</div>
+        </div>
+        <div class="kpi-val">5</div>
+        <div class="kpi-label">Ожидают одобрения</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <div class="kpi-icon" style="background:rgba(16,185,129,0.06);">⏱</div>
+          <div class="kpi-delta up">+18%</div>
+        </div>
+        <div class="kpi-val">312</div>
+        <div class="kpi-label">Часов в этом месяце</div>
+      </div>
+    </div>
+
+    <!-- Two-col: Volunteers + Applications -->
+    <div class="two-col">
+
+      <!-- Volunteers -->
+      <div class="section-card">
+        <div class="section-head">
+          <div class="section-title">👥 Волонтёры <span class="section-count">24</span></div>
+          <a class="section-action" href="curator-volunteers.html">Все →</a>
+        </div>
+        <div class="vol-list">
+          <div class="vol-row header">
+            <div></div>
+            <div class="col-label">Имя</div>
+            <div class="col-label">Статус</div>
+            <div class="col-label">AI-скор</div>
+            <div class="col-label">Часов</div>
+            <div></div>
+          </div>
+          <div class="vol-row" onclick="location.href='curator-volunteer-details.html?id=1'">
+            <div class="vol-avatar" style="background:linear-gradient(135deg,#10b981,#065f46);color:#fff;">АС</div>
+            <div><div class="vol-name">Алина Смирнова</div><div class="vol-skills">SMM, Figma, Дизайн</div></div>
+            <div><span class="status-badge status-active">● Активна</span></div>
+            <div class="vol-score high">94%</div>
+            <div class="vol-hours">42 ч</div>
+            <div><button class="action-btn" onclick="event.stopPropagation();location.href='curator-volunteer-details.html?id=1'">→</button></div>
+          </div>
+          <div class="vol-row" onclick="location.href='curator-volunteer-details.html?id=2'">
+            <div class="vol-avatar" style="background:linear-gradient(135deg,#818cf8,#4338ca);color:#fff;">ДМ</div>
+            <div><div class="vol-name">Данияр Мухамед.</div><div class="vol-skills">Программирование, Excel</div></div>
+            <div><span class="status-badge status-active">● Активен</span></div>
+            <div class="vol-score high">87%</div>
+            <div class="vol-hours">31 ч</div>
+            <div><button class="action-btn" onclick="event.stopPropagation();location.href='curator-volunteer-details.html?id=2'">→</button></div>
+          </div>
+          <div class="vol-row" onclick="location.href='curator-volunteer-details.html?id=3'">
+            <div class="vol-avatar" style="background:linear-gradient(135deg,#f59e0b,#92400e);color:#fff;">ЗН</div>
+            <div><div class="vol-name">Зарина Нурланова</div><div class="vol-skills">Работа с детьми, Психол.</div></div>
+            <div><span class="status-badge status-pending">⏳ Откликнулась</span></div>
+            <div class="vol-score mid">76%</div>
+            <div class="vol-hours">19 ч</div>
+            <div><button class="action-btn" onclick="event.stopPropagation();location.href='curator-volunteer-details.html?id=3'">→</button></div>
+          </div>
+          <div class="vol-row" onclick="location.href='curator-volunteer-details.html?id=4'">
+            <div class="vol-avatar" style="background:linear-gradient(135deg,#ec4899,#9d174d);color:#fff;">МК</div>
+            <div><div class="vol-name">Мадина Касенова</div><div class="vol-skills">Фотография, Маркетинг</div></div>
+            <div><span class="status-badge status-new">✦ Новая</span></div>
+            <div class="vol-score mid">65%</div>
+            <div class="vol-hours">0 ч</div>
+            <div><button class="action-btn" onclick="event.stopPropagation();location.href='curator-volunteer-details.html?id=4'">→</button></div>
+          </div>
+          <div class="vol-row" onclick="location.href='curator-volunteer-details.html?id=5'">
+            <div class="vol-avatar" style="background:linear-gradient(135deg,#06b6d4,#164e63);color:#fff;">РА</div>
+            <div><div class="vol-name">Руслан Ахметов</div><div class="vol-skills">Физ. активность, Орг.</div></div>
+            <div><span class="status-badge status-active">● Активен</span></div>
+            <div class="vol-score high">82%</div>
+            <div class="vol-hours">27 ч</div>
+            <div><button class="action-btn" onclick="event.stopPropagation();location.href='curator-volunteer-details.html?id=5'">→</button></div>
+          </div>
+          <div class="vol-row" onclick="location.href='curator-volunteer-details.html?id=6'">
+            <div class="vol-avatar" style="background:linear-gradient(135deg,#a78bfa,#5b21b6);color:#fff;">ЕП</div>
+            <div><div class="vol-name">Екатерина Петрова</div><div class="vol-skills">Медицина, Психология</div></div>
+            <div><span class="status-badge status-inactive">○ Неактивна</span></div>
+            <div class="vol-score low">58%</div>
+            <div class="vol-hours">8 ч</div>
+            <div><button class="action-btn" onclick="event.stopPropagation();location.href='curator-volunteer-details.html?id=6'">→</button></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right column: Applications + Feed -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+
+        <!-- Pending applications -->
+        <div class="section-card">
+          <div class="section-head">
+            <div class="section-title"> Отклики <span class="section-count" style="background:var(--red-bg);color:var(--red);border-color:var(--red-border);">5 новых</span></div>
+            <a class="section-action" href="curator-applications.html">Все →</a>
+          </div>
+          <div class="app-list">
+            <div class="app-item" onclick="location.href='curator-application-details.html?id=1'">
+              <div class="app-item-top">
+                <div class="app-title">Зарина Н. → Эко-субботник в парке Горького</div>
+                <div class="app-time">10 мин назад</div>
+              </div>
+              <div class="app-meta">
+                <span>🤖 AI-совпадение:</span>
+                <span class="app-match">82%</span>
+                <span style="color:var(--sub2)">·</span>
+                <span>Осталось мест: 4</span>
+              </div>
+              <div class="app-actions" onclick="event.stopPropagation()">
+                <button class="btn-approve" onclick="approveApp(this)">✓ Одобрить</button>
+                <button class="btn-reject" onclick="rejectApp(this)">✕ Отклонить</button>
+              </div>
+            </div>
+            <div class="app-item" onclick="location.href='curator-application-details.html?id=2'">
+              <div class="app-item-top">
+                <div class="app-title">Мадина К. → SMM для молодёжного фестиваля</div>
+                <div class="app-time">1 ч назад</div>
+              </div>
+              <div class="app-meta">
+                <span>🤖 AI-совпадение:</span>
+                <span class="app-match">91%</span>
+                <span style="color:var(--sub2)">·</span>
+                <span>Осталось мест: 2</span>
+              </div>
+              <div class="app-actions" onclick="event.stopPropagation()">
+                <button class="btn-approve" onclick="approveApp(this)">✓ Одобрить</button>
+                <button class="btn-reject" onclick="rejectApp(this)">✕ Отклонить</button>
+              </div>
+            </div>
+            <div class="app-item" onclick="location.href='curator-application-details.html?id=3'">
+              <div class="app-item-top">
+                <div class="app-title">Руслан А. → Марафон по сбору одежды</div>
+                <div class="app-time">3 ч назад</div>
+              </div>
+              <div class="app-meta">
+                <span>🤖 AI-совпадение:</span>
+                <span class="app-match">74%</span>
+                <span style="color:var(--sub2)">·</span>
+                <span>Осталось мест: 3</span>
+              </div>
+              <div class="app-actions" onclick="event.stopPropagation()">
+                <button class="btn-approve" onclick="approveApp(this)">✓ Одобрить</button>
+                <button class="btn-reject" onclick="rejectApp(this)">✕ Отклонить</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Activity feed -->
+        <div class="section-card">
+          <div class="section-head">
+            <div class="section-title"> Активность</div>
+            <a class="section-action" href="curator-analytics.html">Всё →</a>
+          </div>
+          <div class="feed-list">
+            <div class="feed-item">
+              <div class="feed-dot green"></div>
+              <div class="feed-text"><strong>Алина С.</strong> завершила задачу «Фотосъёмка мурал» (+4 ч)</div>
+              <div class="feed-time">5 мин</div>
+            </div>
+            <div class="feed-item">
+              <div class="feed-dot blue"></div>
+              <div class="feed-text">Новый волонтёр <strong>Мадина К.</strong> зарегистрировалась</div>
+              <div class="feed-time">1 ч</div>
+            </div>
+            <div class="feed-item">
+              <div class="feed-dot amber"></div>
+              <div class="feed-text">Задача «Уход за животными» заполнена на <strong>87%</strong> — скоро мест не будет</div>
+              <div class="feed-time">2 ч</div>
+            </div>
+            <div class="feed-item">
+              <div class="feed-dot green"></div>
+              <div class="feed-text"><strong>Данияр М.</strong> откликнулся на 2 новые задачи</div>
+              <div class="feed-time">3 ч</div>
+            </div>
+            <div class="feed-item">
+              <div class="feed-dot red"></div>
+              <div class="feed-text"><strong>Екатерина П.</strong> неактивна более 14 дней</div>
+              <div class="feed-time">вчера</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /two-col -->
+
+    <!-- Bottom row: Tasks + Alerts -->
+    <div class="bottom-row">
+
+      <!-- Tasks overview -->
+      <div class="section-card">
+        <div class="section-head">
+          <div class="section-title">📋 Активные задачи</div>
+          <a class="section-action" href="curator-tasks.html">Открыть ленту →</a>
+        </div>
+        <div class="task-list">
+          <div class="task-row header">
+            <div class="col-label" style="font-size:10.5px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:0.5px;">Задача</div>
+            <div class="col-label" style="font-size:10.5px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:0.5px;">Дата</div>
+            <div class="col-label" style="font-size:10.5px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:0.5px;">Заполнение</div>
+            <div class="col-label" style="font-size:10.5px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:0.5px;">Статус</div>
+            <div></div>
+          </div>
+          <div class="task-row" onclick="location.href='curator-tasks.html?id=1'">
+            <div><div class="task-name">Эко-субботник в парке Горького</div><div class="task-cat">🌿 Экология</div></div>
+            <div style="font-size:12px;color:var(--sub);">5 апр</div>
+            <div class="quota-mini">
+              <div class="quota-bar-sm"><div class="quota-fill-sm warn" style="width:67%"></div></div>
+              <div class="quota-nums">8/12</div>
+            </div>
+            <div><span class="status-badge status-active" style="font-size:10px;">Активна</span></div>
+            <button class="action-btn" onclick="event.stopPropagation();location.href='curator-tasks.html?id=1'">→</button>
+          </div>
+          <div class="task-row" onclick="location.href='curator-tasks.html?id=2'">
+            <div><div class="task-name">SMM для молодёжного фестиваля</div><div class="task-cat">📱 Медиа</div></div>
+            <div style="font-size:12px;color:var(--sub);">12 апр</div>
+            <div class="quota-mini">
+              <div class="quota-bar-sm"><div class="quota-fill-sm" style="width:33%"></div></div>
+              <div class="quota-nums">1/3</div>
+            </div>
+            <div><span class="status-badge status-active" style="font-size:10px;">Активна</span></div>
+            <button class="action-btn" onclick="event.stopPropagation();location.href='curator-tasks.html?id=2'">→</button>
+          </div>
+          <div class="task-row" onclick="location.href='curator-tasks.html?id=3'">
+            <div><div class="task-name">Уход за животными в приюте</div><div class="task-cat">🐾 Животные</div></div>
+            <div style="font-size:12px;color:var(--sub);">10 апр</div>
+            <div class="quota-mini">
+              <div class="quota-bar-sm"><div class="quota-fill-sm full" style="width:87%"></div></div>
+              <div class="quota-nums">7/8</div>
+            </div>
+            <div><span class="status-badge status-pending" style="font-size:10px;">Почти полна</span></div>
+            <button class="action-btn" onclick="event.stopPropagation();location.href='curator-tasks.html?id=3'">→</button>
+          </div>
+          <div class="task-row" onclick="location.href='curator-tasks.html?id=4'">
+            <div><div class="task-name">Помощь в библиотеке для детей</div><div class="task-cat">📚 Образование</div></div>
+            <div style="font-size:12px;color:var(--sub);">18 апр</div>
+            <div class="quota-mini">
+              <div class="quota-bar-sm"><div class="quota-fill-sm" style="width:40%"></div></div>
+              <div class="quota-nums">2/5</div>
+            </div>
+            <div><span class="status-badge status-active" style="font-size:10px;">Активна</span></div>
+            <button class="action-btn" onclick="event.stopPropagation();location.href='curator-tasks.html?id=4'">→</button>
+          </div>
+          <div class="task-row" onclick="location.href='curator-tasks.html?id=5'">
+            <div><div class="task-name">Фотосъёмка городских мурал</div><div class="task-cat">🎨 Искусство</div></div>
+            <div style="font-size:12px;color:var(--sub);">25 апр</div>
+            <div class="quota-mini">
+              <div class="quota-bar-sm"><div class="quota-fill-sm" style="width:0%"></div></div>
+              <div class="quota-nums">0/2</div>
+            </div>
+            <div><span class="status-badge status-new" style="font-size:10px;">Нет откликов</span></div>
+            <button class="action-btn" onclick="event.stopPropagation();location.href='curator-tasks.html?id=5'">→</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alerts & Notifications -->
+      <div class="section-card">
+        <div class="section-head">
+          <div class="section-title"> Уведомления <span class="section-count" style="background:var(--red-bg);color:var(--red);border-color:var(--red-border);">3</span></div>
+          <button class="section-action">Отметить всё →</button>
+        </div>
+        <div class="alert-list">
+          <div class="alert-item">
+            <div class="alert-icon" style="background:var(--red-bg);">⚠️</div>
+            <div class="alert-body">
+              <div class="alert-title">Задача без откликов</div>
+              <div class="alert-desc">«Фотосъёмка городских мурал» — 0 из 2 мест, до события 25 дней. Нужен буст.</div>
+              <div class="alert-action" onclick="location.href='curator-tasks.html?id=5'">Отправить уведомление волонтёрам →</div>
+            </div>
+            <div class="alert-time">сейчас</div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-icon" style="background:var(--amber-bg);"></div>
+            <div class="alert-body">
+              <div class="alert-title">Последнее место в приюте</div>
+              <div class="alert-desc">«Уход за животными» — 7/8 мест, событие 10 апреля. Осталось 1 место.</div>
+              <div class="alert-action" onclick="location.href='curator-tasks.html?id=3'">Закрыть запись →</div>
+            </div>
+            <div class="alert-time">2 ч</div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-icon" style="background:var(--indigo-bg);">💤</div>
+            <div class="alert-body">
+              <div class="alert-title">Неактивный волонтёр</div>
+              <div class="alert-desc">Екатерина П. не заходила 14 дней. AI-скор 58%. Возможно потеряем участника.</div>
+              <div class="alert-action" onclick="location.href='curator-volunteer-details.html?id=6'">Отправить напоминание →</div>
+            </div>
+            <div class="alert-time">вчера</div>
+          </div>
+          <div class="alert-item" style="opacity:0.5;">
+            <div class="alert-icon" style="background:var(--accent-bg);">✅</div>
+            <div class="alert-body">
+              <div class="alert-title">5 новых регистраций за неделю</div>
+              <div class="alert-desc">Платформа растёт! Заполнены профили у 4 из 5 новых участников.</div>
+            </div>
+            <div class="alert-time">3 дня</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /bottom-row -->
+
+    <!-- Bar chart: activity by week -->
+    <div class="section-card" style="margin-bottom:20px;">
+      <div class="section-head">
+        <div class="section-title"> Часы волонтёрства по неделям</div>
+        <div style="display:flex;gap:6px;">
+          <button class="section-action" style="background:var(--accent-bg);border:1px solid var(--accent-border);padding:4px 10px;border-radius:6px;color:var(--accent);">Апрель</button>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--accent);"></div>Выполнено часов</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--indigo);"></div>Новые волонтёры</div>
+        </div>
+        <div class="bar-chart" id="bar-chart"></div>
+      </div>
+    </div>
+
+  </div><!-- /body -->
+</div><!-- /main -->
+</div><!-- /layout -->
+
+<script>
+let isDark = true;
+
+function toggleTheme() {
+  isDark = !isDark;
+  document.body.classList.toggle('light', !isDark);
+  document.querySelector('.theme-btn span').textContent = isDark ? 'Светлая тема' : 'Тёмная тема';
+  const icon = document.getElementById('theme-icon');
+  icon.innerHTML = isDark
+    ? `<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`
+    : `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`;
+  drawChart();
+}
+
+function approveApp(btn) {
+  const item = btn.closest('.app-item');
+  item.style.opacity = '0.4';
+  item.style.pointerEvents = 'none';
+  showToast('✅ Одобрено: ' + item.querySelector('.app-title').textContent.split('→')[0].trim());
+  updateBadge(-1);
+}
+
+function rejectApp(btn) {
+  const item = btn.closest('.app-item');
+  item.style.opacity = '0.4';
+  item.style.pointerEvents = 'none';
+  showToast('✕ Отклонено');
+  updateBadge(-1);
+}
+
+function updateBadge(delta) {
+  document.querySelectorAll('.nav-item .badge:not(.green)').forEach(b => {
+    const n = parseInt(b.textContent) + delta;
+    if (n <= 0) b.style.display = 'none';
+    else b.textContent = n;
+  });
+}
+
+function showToast(msg) {
+  let t = document.getElementById('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:var(--card);border:1px solid var(--border);border-radius:11px;padding:12px 18px;box-shadow:var(--shadow);font-size:13px;font-weight:500;color:var(--text);z-index:1000;transition:all 0.3s;transform:translateY(20px);opacity:0;pointer-events:none;font-family:inherit;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  requestAnimationFrame(() => { t.style.transform = 'translateY(0)'; t.style.opacity = '1'; });
+  setTimeout(() => { t.style.transform = 'translateY(20px)'; t.style.opacity = '0'; }, 3000);
+}
+
+const WEEKS = [
+  { label: '1–7 апр', hours: 54, vols: 2 },
+  { label: '8–14 апр', hours: 78, vols: 4 },
+  { label: '15–21 апр', hours: 92, vols: 5 },
+  { label: '22–28 апр', hours: 88, vols: 3 },
+];
+
+function drawChart() {
+  const maxHours = Math.max(...WEEKS.map(w => w.hours));
+  const maxVols  = Math.max(...WEEKS.map(w => w.vols));
+  const chartH = 90;
+  const accentColor = isDark ? '#10b981' : '#059669';
+  const indigoColor = isDark ? '#818cf8' : '#4f46e5';
+  document.getElementById('bar-chart').innerHTML = WEEKS.map(w => {
+    const hPct = Math.round((w.hours / maxHours) * chartH);
+    const vPct = Math.round((w.vols  / maxVols)  * chartH);
+    return `<div class="bar-group"><div class="bar-pair"><div class="bar" style="height:${hPct}px;width:18px;background:${accentColor};opacity:0.85;" title="${w.hours} ч"></div><div class="bar" style="height:${vPct}px;width:14px;background:${indigoColor};opacity:0.7;" title="${w.vols} чел."></div></div><div class="bar-label">${w.label}</div></div>`;
+  }).join('');
+}
+
+drawChart();
+</script>
+<script type="module">
+  import { getMyProfile } from "./supabase-sync.js";
+
+  const profile = await getMyProfile();
+
+  if (profile) {
+    const nameEl = document.querySelector(".curator-name");
+    if (nameEl) nameEl.textContent = profile.full_name || "Куратор";
+  }
+</script>
+</body>
+</html>
