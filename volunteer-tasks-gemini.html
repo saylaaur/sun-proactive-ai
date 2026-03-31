@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Sun Proactive — Лента задач</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#080808;--sidebar:#0f0f0f;--card:#141414;--card2:#1a1a1a;
+  --text:#f0ede8;--sub:#5a5a5a;--border:#1f1f1f;--input-bg:#0f0f0f;
+  --accent:#10b981;--accent-bg:rgba(16,185,129,0.1);--accent-border:rgba(16,185,129,0.25);
+  --shadow:0 4px 24px rgba(0,0,0,0.5);
+  --ai:#7c3aed;--ai-bg:rgba(124,58,237,0.1);--ai-border:rgba(124,58,237,0.3);
+}
+body.light{
+  --bg:#f0f7f4;--sidebar:#ffffff;--card:#ffffff;--card2:#f5faf8;
+  --text:#1a1a1a;--sub:#9ca3af;--border:#e2ede9;--input-bg:#f5faf8;
+  --accent:#059669;--accent-bg:rgba(5,150,105,0.08);--accent-border:rgba(5,150,105,0.2);
+  --shadow:0 2px 12px rgba(0,0,0,0.06);
+  --ai:#6d28d9;--ai-bg:rgba(109,40,217,0.06);--ai-border:rgba(109,40,217,0.2);
+}
+body{display:flex;min-height:100vh;background:var(--bg);font-family:'DM Sans','Helvetica Neue',sans-serif;color:var(--text);transition:background 0.3s,color 0.3s;}
+
+/* ── Sidebar ── */
+.sidebar{width:210px;min-height:100vh;background:var(--sidebar);border-right:1px solid var(--border);padding:22px 14px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;flex-shrink:0;transition:background 0.3s,border-color 0.3s;}
+.logo{display:flex;align-items:center;gap:9px;padding:0 8px;margin-bottom:26px;}
+.logo-box{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 50%,transparent));display:flex;align-items:center;justify-content:center;font-size:14px;}
+.logo-text{font-size:14px;font-weight:700;color:var(--text);}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:9px;cursor:pointer;font-size:13px;font-weight:400;color:var(--sub);border:1px solid transparent;transition:all 0.15s;background:transparent;}
+.nav-item.active{background:var(--accent-bg);color:var(--accent);font-weight:600;border-color:var(--accent-border);}
+.nav-item:hover:not(.active){background:color-mix(in srgb,var(--border) 80%,transparent);}
+.sidebar-bottom{margin-top:auto;display:flex;flex-direction:column;gap:4px;}
+.theme-btn{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:9px;cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--sub);font-size:13px;font-family:inherit;width:100%;transition:all 0.15s;}
+
+/* ── Main ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{padding:18px 28px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--sidebar);position:sticky;top:0;z-index:10;transition:background 0.3s,border-color 0.3s;}
+.topbar-title{font-size:16px;font-weight:700;color:var(--text);}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.topbar-greet{font-size:13px;color:var(--sub);}
+.avatar-btn{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 50%,transparent));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;cursor:pointer;}
+
+/* ── AI match banner ── */
+.ai-banner{margin:20px 28px 0;background:var(--ai-bg);border:1px solid var(--ai-border);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:12px;}
+.ai-banner-icon{font-size:20px;flex-shrink:0;}
+.ai-banner-text{flex:1;}
+.ai-banner-title{font-size:13px;font-weight:700;color:var(--ai);margin-bottom:2px;}
+.ai-banner-sub{font-size:12px;color:var(--sub);line-height:1.4;}
+.ai-recompute-btn{padding:7px 13px;border-radius:8px;border:1px solid var(--ai-border);background:var(--ai-bg);color:var(--ai);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;white-space:nowrap;transition:all 0.2s;}
+.ai-recompute-btn:hover{background:var(--ai);color:#fff;}
+.ai-recompute-btn.loading{opacity:0.6;pointer-events:none;}
+
+/* ── Body ── */
+.body{padding:20px 28px;flex:1;overflow-y:auto;}
+
+/* ── Search row ── */
+.search-row{display:flex;gap:10px;margin-bottom:14px;align-items:center;}
+.search-wrap{flex:1;position:relative;}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--sub);display:flex;pointer-events:none;}
+.search-input{width:100%;padding:10px 13px 10px 38px;border-radius:10px;border:1.5px solid var(--border);background:var(--input-bg);color:var(--text);font-size:13px;outline:none;font-family:inherit;transition:border-color 0.2s;}
+.search-input:focus{border-color:var(--accent);}
+.search-input::placeholder{color:var(--sub);opacity:0.6;}
+.sort-select{padding:10px 13px;border-radius:10px;border:1.5px solid var(--border);background:var(--input-bg);color:var(--text);font-size:13px;outline:none;font-family:inherit;cursor:pointer;}
+
+/* ── Category chips ── */
+.cat-row{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap;}
+.cat-chip{padding:6px 13px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--sub);font-size:12px;cursor:pointer;transition:all 0.15s;font-family:inherit;display:flex;align-items:center;gap:5px;}
+.cat-chip.active{border-color:var(--accent-border);background:var(--accent-bg);color:var(--accent);font-weight:600;}
+.cat-chip:hover:not(.active){border-color:var(--accent-border);color:var(--accent);}
+
+/* ── Count ── */
+.count-label{font-size:13px;color:var(--sub);margin-bottom:16px;}
+
+/* ── Grid ── */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;}
+
+/* ── Task card ── */
+.task-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;cursor:pointer;transition:all 0.2s;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:11px;}
+.task-card:hover{border-color:var(--accent-border);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,0.3);}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.card-title{font-size:14px;font-weight:600;color:var(--text);line-height:1.4;flex:1;}
+.match-badge{padding:3px 9px;border-radius:20px;font-size:12px;font-weight:700;flex-shrink:0;cursor:default;}
+.match-high{background:rgba(16,185,129,0.12);color:#10b981;border:1px solid rgba(16,185,129,0.25);}
+.match-mid{background:rgba(245,158,11,0.1);color:#f59e0b;border:1px solid rgba(245,158,11,0.25);}
+.match-low{background:rgba(107,114,128,0.1);color:#6b7280;border:1px solid rgba(107,114,128,0.2);}
+.match-computing{background:var(--ai-bg);color:var(--ai);border:1px solid var(--ai-border);animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.5;}}
+.meta-col{display:flex;flex-direction:column;gap:4px;}
+.meta-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--sub);}
+.date-badge{padding:2px 7px;border-radius:5px;font-size:11px;font-weight:600;margin-left:4px;}
+.date-soon{background:rgba(239,68,68,0.12);color:#ef4444;}
+.date-near{background:rgba(245,158,11,0.12);color:#f59e0b;}
+.date-ok{background:var(--accent-bg);color:var(--accent);}
+.skills-row{display:flex;flex-wrap:wrap;gap:4px;}
+.skill-hard{padding:3px 8px;border-radius:6px;font-size:11px;font-weight:500;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border);}
+.skill-soft{padding:3px 8px;border-radius:6px;font-size:11px;font-weight:500;background:rgba(99,102,241,0.1);color:#818cf8;border:1px solid rgba(99,102,241,0.25);}
+body.light .skill-soft{color:#4f46e5;}
+.quota-wrap{display:flex;flex-direction:column;gap:4px;}
+.quota-text{display:flex;justify-content:space-between;font-size:11px;color:var(--sub);}
+.quota-bar{height:3px;background:var(--border);border-radius:3px;overflow:hidden;}
+.quota-fill{height:100%;border-radius:3px;background:var(--accent);transition:width 0.5s;}
+.quota-fill.red{background:#ef4444;}
+
+/* ── AI Trust Plaque (enhanced) ── */
+.trust-plaque{background:var(--ai-bg);border:1px solid var(--ai-border);border-radius:10px;padding:10px 12px;}
+.trust-header{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.trust-icon{font-size:12px;}
+.trust-label{font-size:10px;font-weight:700;color:var(--ai);letter-spacing:0.5px;text-transform:uppercase;}
+.trust-score-bar{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.trust-score-track{flex:1;height:4px;background:var(--border);border-radius:4px;overflow:hidden;}
+.trust-score-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--ai),#a78bfa);transition:width 0.8s ease;}
+.trust-score-pct{font-size:11px;font-weight:700;color:var(--ai);min-width:30px;text-align:right;}
+.trust-text{font-size:12px;color:var(--sub);line-height:1.5;}
+.trust-loading{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--sub);}
+.trust-dots span{animation:blink 1.2s infinite;opacity:0;}
+.trust-dots span:nth-child(2){animation-delay:0.2s;}
+.trust-dots span:nth-child(3){animation-delay:0.4s;}
+@keyframes blink{0%,80%,100%{opacity:0;}40%{opacity:1;}}
+
+/* ── Buttons ── */
+.card-actions{display:flex;gap:8px;margin-top:auto;}
+.apply-btn{flex:1;padding:10px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:inherit;}
+.apply-btn:hover{filter:brightness(1.1);}
+.chat-btn{padding:10px 12px;border-radius:10px;border:1.5px solid var(--ai-border);background:var(--ai-bg);color:var(--ai);font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:inherit;display:flex;align-items:center;gap:5px;white-space:nowrap;}
+.chat-btn:hover{background:var(--ai);color:#fff;border-color:var(--ai);}
+
+/* Empty */
+.empty{grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--sub);}
+
+/* ── RAG Chat Modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:20px;width:100%;max-width:560px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.5);}
+.modal-head{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:12px;}
+.modal-head-info{flex:1;}
+.modal-task-name{font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.modal-sub{font-size:12px;color:var(--sub);display:flex;align-items:center;gap:5px;}
+.rag-badge{padding:2px 7px;border-radius:5px;font-size:10px;font-weight:700;background:var(--ai-bg);color:var(--ai);border:1px solid var(--ai-border);letter-spacing:0.3px;}
+.modal-close{padding:6px;border-radius:8px;border:none;background:transparent;color:var(--sub);cursor:pointer;font-size:18px;line-height:1;transition:color 0.15s;}
+.modal-close:hover{color:var(--text);}
+.chat-body{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:12px;min-height:240px;max-height:380px;}
+.msg{display:flex;gap:8px;align-items:flex-start;}
+.msg.user{flex-direction:row-reverse;}
+.msg-avatar{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
+.msg-avatar.ai{background:var(--ai-bg);color:var(--ai);border:1px solid var(--ai-border);}
+.msg-avatar.user{background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border);}
+.msg-bubble{padding:10px 13px;border-radius:12px;font-size:13px;line-height:1.5;max-width:82%;}
+.msg.ai .msg-bubble{background:var(--card2);border:1px solid var(--border);color:var(--text);border-bottom-left-radius:4px;}
+.msg.user .msg-bubble{background:var(--accent-bg);border:1px solid var(--accent-border);color:var(--text);border-bottom-right-radius:4px;}
+.msg-typing .msg-bubble{min-width:56px;}
+.typing-dots{display:flex;gap:4px;padding:2px 0;}
+.typing-dots span{width:6px;height:6px;border-radius:50%;background:var(--sub);animation:bounce 1.2s infinite;}
+.typing-dots span:nth-child(2){animation-delay:0.2s;}
+.typing-dots span:nth-child(3){animation-delay:0.4s;}
+@keyframes bounce{0%,80%,100%{transform:translateY(0);}40%{transform:translateY(-4px);}}
+.chat-input-row{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:flex-end;}
+.chat-input{flex:1;padding:10px 13px;border-radius:10px;border:1.5px solid var(--border);background:var(--input-bg);color:var(--text);font-size:13px;outline:none;font-family:inherit;resize:none;max-height:100px;transition:border-color 0.2s;line-height:1.4;}
+.chat-input:focus{border-color:var(--ai);}
+.chat-input::placeholder{color:var(--sub);opacity:0.6;}
+.send-btn{padding:10px 14px;border-radius:10px;border:none;background:var(--ai);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.2s;display:flex;align-items:center;gap:5px;flex-shrink:0;}
+.send-btn:hover{filter:brightness(1.1);}
+.send-btn:disabled{opacity:0.5;pointer-events:none;}
+.suggested-questions{padding:8px 20px;display:flex;flex-wrap:wrap;gap:6px;}
+.sq-chip{padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--sub);font-size:11px;cursor:pointer;transition:all 0.15s;font-family:inherit;}
+.sq-chip:hover{border-color:var(--ai-border);color:var(--ai);background:var(--ai-bg);}
+.rag-disclaimer{padding:8px 20px 0;font-size:11px;color:var(--sub);text-align:center;opacity:0.7;}
+
+/* ── CV Verify Modal ── */
+.cv-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(5px);z-index:110;display:none;align-items:center;justify-content:center;padding:20px;}
+.cv-modal-overlay.open{display:flex;}
+.cv-modal{background:var(--card);border:1px solid var(--border);border-radius:20px;width:100%;max-width:480px;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.6);overflow:hidden;}
+.cv-modal-head{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:12px;}
+.cv-modal-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.cv-modal-sub{font-size:12px;color:var(--sub);}
+.cv-badge{padding:2px 7px;border-radius:5px;font-size:10px;font-weight:700;background:rgba(16,185,129,0.12);color:#10b981;border:1px solid rgba(16,185,129,0.25);letter-spacing:0.3px;}
+.cv-body{padding:20px;}
+.cv-drop-zone{border:2px dashed var(--border);border-radius:14px;padding:30px 20px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--input-bg);position:relative;overflow:hidden;}
+.cv-drop-zone:hover,.cv-drop-zone.drag-over{border-color:var(--accent);background:var(--accent-bg);}
+.cv-drop-icon{font-size:36px;margin-bottom:10px;}
+.cv-drop-label{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;}
+.cv-drop-sub{font-size:12px;color:var(--sub);}
+.cv-file-input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.cv-preview-wrap{margin-top:14px;display:none;position:relative;}
+.cv-preview-wrap.show{display:block;}
+.cv-preview-img{width:100%;border-radius:10px;max-height:220px;object-fit:cover;display:block;}
+.cv-preview-clear{position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,0.6);border:none;color:#fff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}
+.cv-hint{margin-top:10px;font-size:12px;color:var(--sub);background:var(--card2);border-radius:8px;padding:8px 12px;border:1px solid var(--border);}
+.cv-result{margin-top:14px;border-radius:12px;padding:14px;display:none;font-size:13px;line-height:1.6;}
+.cv-result.show{display:block;}
+.cv-result.success{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#10b981;}
+.cv-result.fail{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#ef4444;}
+.cv-result.analyzing{background:var(--ai-bg);border:1px solid var(--ai-border);color:var(--ai);}
+.cv-result-icon{font-size:18px;margin-bottom:6px;}
+.cv-result-title{font-weight:700;margin-bottom:4px;}
+.cv-result-text{opacity:0.9;font-size:12px;}
+.cv-result-score{display:inline-block;margin-top:6px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(255,255,255,0.15);}
+.cv-actions{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px;}
+.cv-verify-btn{flex:1;padding:11px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;}
+.cv-verify-btn:hover{filter:brightness(1.1);}
+.cv-verify-btn:disabled{opacity:0.5;pointer-events:none;}
+.cv-cancel-btn{padding:11px 16px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--sub);font-size:13px;cursor:pointer;font-family:inherit;transition:all 0.2s;}
+.cv-cancel-btn:hover{border-color:var(--text);color:var(--text);}
+.verify-btn{padding:10px 12px;border-radius:10px;border:1.5px solid rgba(16,185,129,0.3);background:rgba(16,185,129,0.08);color:#10b981;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:inherit;display:flex;align-items:center;gap:5px;white-space:nowrap;}
+.verify-btn:hover{background:#10b981;color:#fff;border-color:#10b981;}
+.verify-btn.verified{background:rgba(16,185,129,0.2);border-color:rgba(16,185,129,0.4);cursor:default;}
+.verify-btn.verified:hover{background:rgba(16,185,129,0.2);color:#10b981;}
+
+.cv-model-selector{display:flex;gap:6px;margin-bottom:14px;}
+.cv-model-btn{flex:1;padding:8px 10px;border-radius:9px;border:1.5px solid var(--border);background:transparent;color:var(--sub);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:5px;}
+.cv-model-btn.active-claude{border-color:var(--ai-border);background:var(--ai-bg);color:var(--ai);}
+.cv-model-btn.active-gemini{border-color:rgba(234,67,53,0.35);background:rgba(234,67,53,0.08);color:#ea4335;}
+.cv-model-btn:hover:not(.active-claude):not(.active-gemini){border-color:var(--accent-border);color:var(--accent);}
+
+/* ── Notification toast ── */
+.notif-toast{position:fixed;top:20px;right:20px;background:var(--card);border:1px solid var(--ai-border);border-radius:12px;padding:14px 18px;box-shadow:var(--shadow);font-size:13px;color:var(--text);z-index:200;transition:all 0.3s;transform:translateY(-10px);opacity:0;pointer-events:none;max-width:320px;}
+.notif-toast.show{transform:translateY(0);opacity:1;}
+.notif-toast-title{font-weight:700;color:var(--ai);margin-bottom:3px;font-size:12px;}
+
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+@media(max-width:760px){.sidebar{width:60px;}.logo-text,.nav-item span:last-child{display:none;}.logo{justify-content:center;}.grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-box">☀️</div>
+    <div class="logo-text">Sun Proactive</div>
+  </div>
+  <div class="nav-item active" onclick="window.location.href='volunteer-tasks.html'"><span>📋</span><span>Задачи</span></div>
+  <div class="nav-item" onclick="window.location.href='volunteer-profile.html'"><span>👤</span><span>Профиль</span></div>
+  <div class="nav-item"onclick="window.location.href='volunteer-applications.html'"><span>📩</span><span>Мои отклики</span></div>
+  <div class="nav-item"><span></span><span>Достижения</span></div>
+  <div class="nav-item" onclick="window.location.href='curator.html'"><span>🎓</span><span>Куратор</span></div>
+  <div class="sidebar-bottom">
+    <button class="theme-btn" onclick="toggleTheme()">
+      <svg id="theme-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <span>Светлая тема</span>
+    </button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">📋 Лента задач</div>
+    <div class="topbar-right">
+      <div class="topbar-greet">Привет, Алима 👋</div>
+      <div class="avatar-btn">АИ</div>
+    </div>
+  </div>
+
+  <!-- AI Matching Banner -->
+  <div class="ai-banner">
+    <div class="ai-banner-icon">🧠</div>
+    <div class="ai-banner-text">
+      <div class="ai-banner-title">Семантический AI-матчинг активен</div>
+      <div class="ai-banner-sub" id="banner-sub">Анализирую твой профиль и вычисляю Cosine Similarity с каждой задачей...</div>
+    </div>
+    <button class="ai-recompute-btn" id="recompute-btn" onclick="runFullMatching()">
+      <span>⟳</span> Пересчитать
+    </button>
+  </div>
+
+  <div class="body">
+    <div class="search-row">
+      <div class="search-wrap">
+        <div class="search-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+        <input type="text" class="search-input" id="search-input" placeholder="Поиск по задачам, навыкам, локации..." oninput="filterTasks()">
+      </div>
+      <select class="sort-select" id="sort-select" onchange="filterTasks()">
+        <option value="match">🧠 AI-совпадение</option>
+        <option value="date">📅 Дата</option>
+        <option value="quota">🪑 Свободные места</option>
+      </select>
+    </div>
+    <div class="cat-row" id="cat-row"></div>
+    <div class="count-label" id="count-label"></div>
+    <div class="grid" id="task-grid"></div>
+  </div>
+</div>
+
+<!-- RAG Chat Modal -->
+<div class="modal-overlay" id="chat-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-head-info">
+        <div class="modal-task-name" id="modal-task-name">—</div>
+        <div class="modal-sub">
+          <span class="rag-badge">RAG</span>
+          <span>Бот отвечает только по данным задачи</span>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeChat()">✕</button>
+    </div>
+    <div class="rag-disclaimer">🔒 Если ответа нет в описании задачи — бот честно скажет об этом</div>
+    <div class="suggested-questions" id="suggested-qs"></div>
+    <div class="chat-body" id="chat-body"></div>
+    <div class="chat-input-row">
+      <textarea class="chat-input" id="chat-input" placeholder="Спроси о задаче..." rows="1"
+        onkeydown="handleChatKey(event)" oninput="autoResize(this)"></textarea>
+      <button class="send-btn" id="send-btn" onclick="sendChatMessage()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Отправить
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Notification toast -->
+<div class="notif-toast" id="notif-toast">
+  <div class="notif-toast-title">🤖 AI-Менеджер</div>
+  <div id="notif-text"></div>
+</div>
+
+<!-- CV Verify Modal -->
+<div class="cv-modal-overlay" id="cv-modal">
+  <div class="cv-modal">
+    <div class="cv-modal-head">
+      <div style="flex:1;">
+        <div class="cv-modal-title" id="cv-task-name">—</div>
+        <div class="cv-modal-sub" style="display:flex;align-items:center;gap:6px;margin-top:3px;">
+          <span class="cv-badge">👁 COMPUTER VISION</span>
+          <span>AI проверяет фото на соответствие заданию</span>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeCVModal()">✕</button>
+    </div>
+    <div class="cv-body">
+      <div class="cv-model-selector">
+        <button class="cv-model-btn active-claude" id="model-btn-claude" onclick="setCVModel('claude')">🤖 Claude Vision</button>
+        <button class="cv-model-btn" id="model-btn-gemini" onclick="setCVModel('gemini')">✨ Gemini Vision</button>
+      </div>
+      <div class="cv-drop-zone" id="cv-drop-zone">
+        <input type="file" class="cv-file-input" id="cv-file-input" accept="image/*" onchange="handleFileSelect(event)">
+        <div class="cv-drop-icon">📸</div>
+        <div class="cv-drop-label">Загрузи фото выполненного задания</div>
+        <div class="cv-drop-sub">Нажми или перетащи изображение сюда</div>
+      </div>
+      <div class="cv-preview-wrap" id="cv-preview-wrap">
+        <img class="cv-preview-img" id="cv-preview-img" src="" alt="preview">
+        <button class="cv-preview-clear" onclick="clearPhoto()">✕</button>
+      </div>
+      <div class="cv-hint" id="cv-hint">💡 AI проверит: соответствует ли фото задаче, видно ли волонтёрскую активность, и насколько ты выполнил задание</div>
+      <div class="cv-result" id="cv-result">
+        <div class="cv-result-icon" id="cv-result-icon"></div>
+        <div class="cv-result-title" id="cv-result-title"></div>
+        <div class="cv-result-text" id="cv-result-text"></div>
+        <div class="cv-result-score" id="cv-result-score"></div>
+      </div>
+    </div>
+    <div class="cv-actions">
+      <button class="cv-cancel-btn" onclick="closeCVModal()">Отмена</button>
+      <button class="cv-verify-btn" id="cv-verify-btn" onclick="runCVVerification()" disabled>
+        <span>👁</span> Проверить фото
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// PROFILE (симулируем данные из Supabase)
+// ─────────────────────────────────────────────
+const MY_PROFILE = {
+  name: "Алима Искакова",
+  city: "Алматы",
+  age: 22,
+  bio: "Студентка факультета журналистики. Люблю работу с детьми, фотографию и экологические инициативы. Умею работать в команде и организовывать людей.",
+  skills: ["SMM", "фотография", "работа с детьми", "организация мероприятий"],
+  interests: ["экология", "образование", "медиа"],
+  goals: ["Опыт и навыки", "Помочь людям"]
+};
+
+// ─────────────────────────────────────────────
+// TASKS DATA (в реальном проекте — из Supabase)
+// ─────────────────────────────────────────────
+const TASKS = [
+  {
+    id: 1,
+    title: "Эко-субботник в парке Горького",
+    date: "2026-04-05",
+    location: "Парк Горького, Алматы",
+    category: "экология",
+    quota: 12, filled: 8,
+    hard: ["физ. активность"],
+    soft: ["командная работа", "ответственность"],
+    description: `Нужны волонтёры для уборки мусора в парке Горького. Мероприятие начинается в 9:00 утра и заканчивается около 13:00. Необходимо принести свои перчатки и удобную одежду. Все мешки для мусора предоставляем мы. Место сбора — центральный вход парка. Обед не предусмотрен, но будет горячий чай. Кураторы: Марат и Дина. Телефон для связи: +7 747 000 0001. После уборки будет общее фото и выдача сертификатов волонтёра. Также рекомендуем принести воду.`,
+    match: null, matchReason: null, verified: false
+  },
+  {
+    id: 2,
+    title: "SMM для молодёжного фестиваля",
+    date: "2026-04-12",
+    location: "Онлайн + площадка в центре",
+    category: "медиа",
+    quota: 3, filled: 1,
+    hard: ["SMM", "Figma"],
+    soft: ["копирайтинг", "креативность"],
+    description: `Требуется SMM-специалист для продвижения молодёжного фестиваля "Жастар 2026". Задачи: создание контента для Instagram и TikTok, разработка stories в Figma, написание текстов для постов. График: 3-4 поста в неделю с 12 апреля по 3 мая. Работа удалённая, но нужно присутствие на самом фестивале (3 мая, площадка Арт-Хаус). Предоставляем брендбук и все материалы. Результат: 20+ постов, охват 5000+. Куратор: Аиша, @aisha_smm в Telegram.`,
+    match: null, matchReason: null, verified: false
+  },
+  {
+    id: 3,
+    title: "Помощь в библиотеке для детей",
+    date: "2026-04-18",
+    location: "Центральная библиотека, ул. Абая 14",
+    category: "образование",
+    quota: 5, filled: 2,
+    hard: ["работа с детьми"],
+    soft: ["коммуникация", "терпение"],
+    description: `Нужны волонтёры для помощи детям 7-12 лет в читальном зале. Задачи: помощь с чтением, организация книжных игр, выдача книг. График: суббота 18 апреля, с 10:00 до 15:00. Одежда — любая опрятная. Дети приходят организованными группами. Перерыв на обед 13:00-14:00, еда не предоставляется. Требуется опыт или желание работать с детьми. Контакт куратора: biblioteka_abay@gmail.com. Парковка есть рядом, вход со стороны ул. Абая.`,
+    match: null, matchReason: null, verified: false
+  },
+  {
+    id: 4,
+    title: "Марафон по сбору одежды",
+    date: "2026-04-20",
+    location: "ТРЦ Mega, Алматы",
+    category: "социальное",
+    quota: 6, filled: 3,
+    hard: ["организация"],
+    soft: ["коммуникация", "стрессоустойчивость"],
+    description: `Марафон сбора одежды для малоимущих семей. Нужны волонтёры для приёма, сортировки и упаковки одежды. Место: ТРЦ Mega, центральный атриум. Время: 20 апреля, 11:00-18:00. Одежду принимаем чистую, в хорошем состоянии. Волонтёры стоят за стойками, общаются с посетителями, объясняют условия акции. Форма: синяя футболка Sun Proactive (выдаём). Обед: 13:00-14:00, пицца от организаторов. Куратор: Темiр, тел. +7 701 111 2233.`,
+    match: null, matchReason: null, verified: false
+  },
+  {
+    id: 5,
+    title: "Фотосъёмка городских мурал",
+    date: "2026-04-25",
+    location: "Различные районы Алматы",
+    category: "искусство",
+    quota: 2, filled: 0,
+    hard: ["Фотография"],
+    soft: ["внимательность", "творчество"],
+    description: `Нужен фотограф-волонтёр для документирования уличного искусства Алматы. Задача: объехать 8 точек с муралами, сделать профессиональные фото для городского каталога. Нужна своя камера (зеркалка или беззеркалка), мобильный телефон не подойдёт. Маршрут предоставим заранее. Дата: 25 апреля, старт в 8:00 от ул. Панфилова 48. Транспорт: своё авто или велосипед (возместим бензин). Все права на фото остаются у волонтёра, но разрешение на использование городом обязательно. Контакт: @almatymurals.`,
+    match: null, matchReason: null, verified: false
+  },
+  {
+    id: 6,
+    title: "Уход за животными в приюте",
+    date: "2026-04-10",
+    location: "Приют «Добрые руки», пр. Райымбека",
+    category: "животные",
+    quota: 8, filled: 7,
+    hard: [],
+    soft: ["любовь к животным", "ответственность"],
+    description: `Нужны волонтёры для ухода за собаками и кошками в приюте. Задачи: кормление, прогулки с собаками, уборка вольеров. График: 10 апреля, 09:00-13:00. Одежда — старая, которую не жалко. Перчатки есть. Аллергикам лучше не приходить. Место: пр. Райымбека 302, ищите зелёные ворота. Автобусы: 62, 85. Также ищем людей, готовых брать животных на передержку. Куратор: Сания, +7 727 000 9988.`,
+    match: null, matchReason: null, verified: false
+  }
+];
+
+const CATS = ["все","экология","медиа","образование","социальное","искусство","животные"];
+const CAT_ICONS = {все:"",экология:"",медиа:"",образование:"",социальное:"",искусство:"",животные:"🐾"};
+let activeCategory = "все";
+let isDark = true;
+let matchingInProgress = false;
+
+// ─────────────────────────────────────────────
+// ANTHROPIC API helper
+// ─────────────────────────────────────────────
+async function callClaude(messages, system = "", maxTokens = 500) {
+  const resp = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: maxTokens,
+      system: system || undefined,
+      messages
+    })
+  });
+  const data = await resp.json();
+  const text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("");
+  return text;
+}
+
+// ─────────────────────────────────────────────
+// SEMANTIC MATCHING via AI
+// Вместо векторов — LLM как «мягкий» semantic embedder
+// (в проде: text-embedding-3-small + cosine similarity)
+// ─────────────────────────────────────────────
+async function computeMatchForTask(task) {
+  const profileText = `
+Имя: ${MY_PROFILE.name}
+Город: ${MY_PROFILE.city}, ${MY_PROFILE.age} лет
+Биография: ${MY_PROFILE.bio}
+Hard-навыки: ${MY_PROFILE.skills.join(", ")}
+Интересы: ${MY_PROFILE.interests.join(", ")}
+Цели: ${MY_PROFILE.goals.join(", ")}
+`.trim();
+
+  const taskText = `
+Задача: ${task.title}
+Категория: ${task.category}
+Hard-навыки задачи: ${task.hard.join(", ") || "не указаны"}
+Soft-навыки задачи: ${task.soft.join(", ")}
+Описание: ${task.description}
+`.trim();
+
+  const system = `Ты — система семантического матчинга волонтёров (аналог cosine similarity на embeddings).
+Проанализируй совпадение профиля волонтёра и задачи по смыслу, не только по ключевым словам.
+Учитывай: навыки, интересы, биографию, цели, категорию задачи.
+Ответь СТРОГО в JSON без markdown-блоков:
+{"score": 0.XX, "reason": "2-3 предложения почему подходит или нет, конкретно и честно"}
+score — число от 0.0 до 1.0, округли до сотых.`;
+
+  const raw = await callClaude([
+    { role: "user", content: `ПРОФИЛЬ ВОЛОНТЁРА:\n${profileText}\n\nЗАДАЧА:\n${taskText}` }
+  ], system, 300);
+
+  try {
+    const clean = raw.replace(/```json|```/g, "").trim();
+    const parsed = JSON.parse(clean);
+    return { score: parseFloat(parsed.score), reason: parsed.reason };
+  } catch {
+    return { score: 0.5, reason: "Не удалось вычислить совпадение." };
+  }
+}
+
+async function runFullMatching() {
+  if (matchingInProgress) return;
+  matchingInProgress = true;
+  const btn = document.getElementById("recompute-btn");
+  btn.classList.add("loading");
+  btn.innerHTML = `<span>⏳</span> Считаю...`;
+  document.getElementById("banner-sub").textContent = "Запускаю AI-анализ: сравниваю твой профиль с каждой задачей по смыслу...";
+
+  // Mark all badges as computing
+  TASKS.forEach(t => {
+    t.match = null;
+    t.matchReason = null;
+    const badge = document.getElementById(`badge-${t.id}`);
+    if (badge) { badge.className = "match-badge match-computing"; badge.textContent = "⏳"; }
+    const trustEl = document.getElementById(`trust-${t.id}`);
+    if (trustEl) trustEl.innerHTML = `<div class="trust-header"><span class="trust-icon">🧠</span><span class="trust-label">AI МАТЧИНГ</span></div><div class="trust-loading">Анализирую<span class="trust-dots"><span>.</span><span>.</span><span>.</span></span></div>`;
+  });
+
+  // Compute matches sequentially to avoid rate limits
+  for (const task of TASKS) {
+    try {
+      const result = await computeMatchForTask(task);
+      task.match = result.score;
+      task.matchReason = result.reason;
+
+      const pct = Math.round(result.score * 100);
+      const cls = result.score >= 0.9 ? "match-high" : result.score >= 0.75 ? "match-mid" : "match-low";
+      const badge = document.getElementById(`badge-${task.id}`);
+      if (badge) { badge.className = `match-badge ${cls}`; badge.textContent = pct + "%"; }
+
+      const trustEl = document.getElementById(`trust-${task.id}`);
+      if (trustEl && result.score >= 0.55) {
+        const fillW = Math.round(result.score * 100);
+        trustEl.innerHTML = `
+          <div class="trust-header">
+            <span class="trust-icon">🧠</span>
+            <span class="trust-label">ПОЧЕМУ ПОДХОДИТ</span>
+          </div>
+          <div class="trust-score-bar">
+            <div class="trust-score-track"><div class="trust-score-fill" style="width:${fillW}%"></div></div>
+            <div class="trust-score-pct">${fillW}%</div>
+          </div>
+          <div class="trust-text">${result.reason}</div>`;
+      } else if (trustEl) {
+        trustEl.innerHTML = `<div class="trust-text" style="color:var(--sub);font-size:12px;">${result.reason}</div>`;
+      }
+    } catch (e) {
+      task.match = 0.5;
+    }
+  }
+
+  matchingInProgress = false;
+  btn.classList.remove("loading");
+  btn.innerHTML = `<span>⟳</span> Пересчитать`;
+  document.getElementById("banner-sub").textContent = `✅ Матчинг завершён — ${TASKS.length} задач проанализировано по профилю через LLM`;
+  filterTasks();
+}
+
+// ─────────────────────────────────────────────
+// RAG CHAT
+// ─────────────────────────────────────────────
+let currentTask = null;
+let chatHistory = [];
+
+function openChat(taskId, event) {
+  event.stopPropagation();
+  currentTask = TASKS.find(t => t.id === taskId);
+  chatHistory = [];
+  document.getElementById("modal-task-name").textContent = currentTask.title;
+  document.getElementById("chat-body").innerHTML = "";
+  document.getElementById("chat-input").value = "";
+
+  // Suggested questions
+  const sqs = [
+    "Что нужно принести?",
+    "Когда начало и конец?",
+    "Как добраться?",
+    "Кто куратор?"
+  ];
+  document.getElementById("suggested-qs").innerHTML = sqs.map(q =>
+    `<button class="sq-chip" onclick="useSuggestedQ('${q}')">${q}</button>`
+  ).join("");
+
+  // Greeting
+  appendMsg("ai", `Привет! Я RAG-ассистент по задаче **«${currentTask.title}»**. Задавай любые вопросы — отвечу строго по информации от организатора. Если чего-то нет в описании — честно скажу об этом.`);
+  document.getElementById("chat-modal").classList.add("open");
+  document.getElementById("chat-input").focus();
+}
+
+function closeChat() {
+  document.getElementById("chat-modal").classList.remove("open");
+  currentTask = null;
+  chatHistory = [];
+}
+
+function useSuggestedQ(q) {
+  document.getElementById("chat-input").value = q;
+  sendChatMessage();
+}
+
+function appendMsg(role, text) {
+  const body = document.getElementById("chat-body");
+  const div = document.createElement("div");
+  div.className = `msg ${role}`;
+  const initials = role === "ai" ? "🤖" : "ты";
+  div.innerHTML = `
+    <div class="msg-avatar ${role}">${initials}</div>
+    <div class="msg-bubble">${text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")}</div>`;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+  return div;
+}
+
+function appendTyping() {
+  const body = document.getElementById("chat-body");
+  const div = document.createElement("div");
+  div.className = "msg ai msg-typing";
+  div.id = "typing-indicator";
+  div.innerHTML = `<div class="msg-avatar ai">🤖</div><div class="msg-bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+
+async function sendChatMessage() {
+  const input = document.getElementById("chat-input");
+  const text = input.value.trim();
+  if (!text || !currentTask) return;
+
+  input.value = "";
+  input.style.height = "";
+  document.getElementById("send-btn").disabled = true;
+  document.getElementById("suggested-qs").innerHTML = "";
+
+  appendMsg("user", text);
+  chatHistory.push({ role: "user", content: text });
+  appendTyping();
+
+  const system = `Ты — RAG-ассистент волонтёрской платформы Sun Proactive.
+Твоя задача — отвечать на вопросы СТРОГО на основе описания задачи ниже.
+Если ответ есть в описании — дай точный, конкретный ответ.
+Если ответа нет — обязательно скажи: "Организатор этого не указал. Рекомендую уточнить у куратора."
+Не выдумывай. Не угадывай. Будь полезным и честным.
+Отвечай на русском языке, кратко и по делу.
+
+=== ОПИСАНИЕ ЗАДАЧИ ===
+Название: ${currentTask.title}
+Дата: ${currentTask.date}
+Локация: ${currentTask.location}
+Описание: ${currentTask.description}
+======================`;
+
+  const messages = chatHistory.map(m => ({ role: m.role, content: m.content }));
+
+  try {
+    const reply = await callClaude(messages, system, 400);
+    document.getElementById("typing-indicator")?.remove();
+    appendMsg("ai", reply);
+    chatHistory.push({ role: "assistant", content: reply });
+  } catch (e) {
+    document.getElementById("typing-indicator")?.remove();
+    appendMsg("ai", "Произошла ошибка. Попробуй ещё раз.");
+  }
+
+  document.getElementById("send-btn").disabled = false;
+  document.getElementById("chat-input").focus();
+}
+
+function handleChatKey(e) {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    sendChatMessage();
+  }
+}
+
+function autoResize(el) {
+  el.style.height = "";
+  el.style.height = Math.min(el.scrollHeight, 100) + "px";
+}
+
+// ─────────────────────────────────────────────
+// RENDER & FILTER
+// ─────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// COMPUTER VISION TASK VERIFICATION
+// ─────────────────────────────────────────────
+const GEMINI_API_KEY = "AIzaSyDG7HB6jxGXPc4U32FP1IMJgIEljpCHsWY";
+let currentCVTask = null;
+let currentCVImageBase64 = null;
+let currentCVModel = "claude"; // "claude" | "gemini"
+
+function setCVModel(model) {
+  currentCVModel = model;
+  document.getElementById("model-btn-claude").className = "cv-model-btn" + (model === "claude" ? " active-claude" : "");
+  document.getElementById("model-btn-gemini").className = "cv-model-btn" + (model === "gemini" ? " active-gemini" : "");
+  // reset result if switching
+  document.getElementById("cv-result").className = "cv-result";
+}
+
+async function callGeminiVision(base64Image, prompt, systemPrompt) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+  const resp = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{
+        parts: [
+          { text: systemPrompt + "\n\n" + prompt },
+          { inline_data: { mime_type: "image/jpeg", data: base64Image } }
+        ]
+      }],
+      generationConfig: { maxOutputTokens: 600, temperature: 0.2 }
+    })
+  });
+  const data = await resp.json();
+  return data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+}
+
+
+function openCVModal(taskId, event) {
+  event.stopPropagation();
+  const task = TASKS.find(t => t.id === taskId);
+  if (task.verified) {
+    showNotif(`✅ Задача «${task.title}» уже подтверждена!`);
+    return;
+  }
+  currentCVTask = task;
+  currentCVImageBase64 = null;
+  currentCVModel = "claude";
+  document.getElementById("model-btn-claude").className = "cv-model-btn active-claude";
+  document.getElementById("model-btn-gemini").className = "cv-model-btn";
+  document.getElementById("cv-task-name").textContent = task.title;
+  document.getElementById("cv-result").className = "cv-result";
+  document.getElementById("cv-preview-wrap").className = "cv-preview-wrap";
+  document.getElementById("cv-verify-btn").disabled = true;
+  document.getElementById("cv-file-input").value = "";
+  document.getElementById("cv-hint").textContent = `💡 Загрузи фото, подтверждающее участие: «${task.title}»`;
+  document.getElementById("cv-modal").classList.add("open");
+
+  // drag-and-drop
+  const zone = document.getElementById("cv-drop-zone");
+  zone.ondragover = (e) => { e.preventDefault(); zone.classList.add("drag-over"); };
+  zone.ondragleave = () => zone.classList.remove("drag-over");
+  zone.ondrop = (e) => {
+    e.preventDefault();
+    zone.classList.remove("drag-over");
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith("image/")) loadImageFile(file);
+  };
+}
+
+function closeCVModal() {
+  document.getElementById("cv-modal").classList.remove("open");
+  currentCVTask = null;
+  currentCVImageBase64 = null;
+}
+
+function handleFileSelect(event) {
+  const file = event.target.files[0];
+  if (file) loadImageFile(file);
+}
+
+function loadImageFile(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const dataURL = e.target.result;
+    // Extract base64
+    currentCVImageBase64 = dataURL.split(",")[1];
+    // Show preview
+    document.getElementById("cv-preview-img").src = dataURL;
+    document.getElementById("cv-preview-wrap").className = "cv-preview-wrap show";
+    document.getElementById("cv-verify-btn").disabled = false;
+    // Reset result
+    document.getElementById("cv-result").className = "cv-result";
+    document.getElementById("cv-hint").textContent = "✅ Фото загружено. Нажми «Проверить фото» для AI-анализа.";
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearPhoto() {
+  currentCVImageBase64 = null;
+  document.getElementById("cv-preview-wrap").className = "cv-preview-wrap";
+  document.getElementById("cv-file-input").value = "";
+  document.getElementById("cv-verify-btn").disabled = true;
+  document.getElementById("cv-result").className = "cv-result";
+  document.getElementById("cv-hint").textContent = `💡 Загрузи фото, подтверждающее участие: «${currentCVTask.title}»`;
+}
+
+async function runCVVerification() {
+  if (!currentCVTask || !currentCVImageBase64) return;
+
+  const btn = document.getElementById("cv-verify-btn");
+  btn.disabled = true;
+  const modelLabel = currentCVModel === "gemini" ? "Gemini" : "Claude";
+  btn.innerHTML = `<span>⏳</span> ${modelLabel} анализирует...`;
+
+  // Show analyzing state
+  const resultEl = document.getElementById("cv-result");
+  resultEl.className = "cv-result analyzing show";
+  document.getElementById("cv-result-icon").textContent = currentCVModel === "gemini" ? "✨" : "🔍";
+  document.getElementById("cv-result-title").textContent = `${modelLabel} Vision анализирует фото...`;
+  document.getElementById("cv-result-text").textContent = "Сравниваю изображение с описанием задачи. Это займёт несколько секунд.";
+  document.getElementById("cv-result-score").textContent = "";
+
+  const systemPrompt = `Ты — система Computer Vision для волонтёрской платформы Sun Proactive.
+Твоя задача: проверить, соответствует ли загруженное фото выполнению волонтёрского задания.
+
+Задание: «${currentCVTask.title}»
+Категория: ${currentCVTask.category}
+Описание: ${currentCVTask.description}
+Навыки: ${[...currentCVTask.hard, ...currentCVTask.soft].join(", ")}
+
+Проанализируй изображение и ответь СТРОГО в JSON без markdown-блоков:
+{
+  "verified": true/false,
+  "confidence": 0.XX,
+  "title": "Краткий заголовок (5-7 слов)",
+  "explanation": "2-3 предложения — что видно на фото и почему это подтверждает (или не подтверждает) выполнение задания. Будь конкретным.",
+  "details": "Что именно AI заметил на фото (люди, предметы, место, действия)"
+}
+confidence — от 0.0 до 1.0. Будь честным: если фото нерелевантно — так и скажи.`;
+
+  try {
+    let raw = "";
+
+    if (currentCVModel === "gemini") {
+      raw = await callGeminiVision(
+        currentCVImageBase64,
+        "Проверь это фото как доказательство выполнения задания.",
+        systemPrompt
+      );
+    } else {
+      const resp = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 600,
+          system: systemPrompt,
+          messages: [{
+            role: "user",
+            content: [
+              { type: "image", source: { type: "base64", media_type: "image/jpeg", data: currentCVImageBase64 } },
+              { type: "text", text: "Проверь это фото как доказательство выполнения задания." }
+            ]
+          }]
+        })
+      });
+      const data = await resp.json();
+      raw = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("");
+    }
+
+    const clean = raw.replace(/```json|```/g, "").trim();
+    const parsed = JSON.parse(clean);
+
+    const isVerified = parsed.verified && parsed.confidence >= 0.55;
+    const pct = Math.round((parsed.confidence || 0) * 100);
+    const modelIcon = currentCVModel === "gemini" ? "✨" : "🤖";
+
+    resultEl.className = `cv-result ${isVerified ? "success" : "fail"} show`;
+    document.getElementById("cv-result-icon").textContent = isVerified ? "✅" : "❌";
+    document.getElementById("cv-result-title").textContent = parsed.title || (isVerified ? "Задание подтверждено!" : "Фото не подтверждает задание");
+    document.getElementById("cv-result-text").textContent = (parsed.explanation || "") + (parsed.details ? " " + parsed.details : "");
+    document.getElementById("cv-result-score").textContent = `${modelIcon} ${modelLabel} · Уверенность: ${pct}%`;
+
+    if (isVerified) {
+      currentCVTask.verified = true;
+      const cardBtn = document.getElementById(`verify-btn-${currentCVTask.id}`);
+      if (cardBtn) {
+        cardBtn.classList.add("verified");
+        cardBtn.innerHTML = "✅";
+        cardBtn.title = "Задание подтверждено!";
+      }
+      btn.innerHTML = `<span>✅</span> Подтверждено!`;
+      showNotif(`✅ Задача «${currentCVTask.title}» подтверждена через ${modelLabel} Vision!`);
+      setTimeout(closeCVModal, 2500);
+    } else {
+      btn.innerHTML = `<span>🔄</span> Попробовать снова`;
+      btn.disabled = false;
+      btn.onclick = () => clearPhoto();
+    }
+
+  } catch (e) {
+    resultEl.className = "cv-result fail show";
+    document.getElementById("cv-result-icon").textContent = "⚠️";
+    document.getElementById("cv-result-title").textContent = "Ошибка анализа";
+    document.getElementById("cv-result-text").textContent = "Не удалось проанализировать фото. Попробуй ещё раз.";
+    document.getElementById("cv-result-score").textContent = "";
+    btn.innerHTML = `<span>👁</span> Проверить фото`;
+    btn.disabled = false;
+  }
+}
+
+// Close CV modal on overlay click
+document.getElementById("cv-modal").addEventListener("click", function(e) {
+  if (e.target === this) closeCVModal();
+});
+
+
+  const catRow = document.getElementById("cat-row");
+  catRow.innerHTML = CATS.map(cat =>
+    `<button class="cat-chip${cat==="все"?" active":""}" onclick="setCategory('${cat}',this)">
+      <span>${CAT_ICONS[cat]}</span>${cat.charAt(0).toUpperCase()+cat.slice(1)}
+    </button>`
+  ).join("");
+  renderCards(TASKS);
+  // Auto-run matching on load
+  setTimeout(runFullMatching, 600);
+  // Simulate AI manager notification
+  setTimeout(simulateAIManagerNotif, 5000);
+}
+
+function setCategory(cat, btn) {
+  activeCategory = cat;
+  document.querySelectorAll(".cat-chip").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  filterTasks();
+}
+
+function filterTasks() {
+  const q = document.getElementById("search-input").value.toLowerCase();
+  const sort = document.getElementById("sort-select").value;
+  let filtered = TASKS.filter(t => {
+    const matchSearch = !q || t.title.toLowerCase().includes(q) || t.location.toLowerCase().includes(q) || [...t.hard,...t.soft].some(s=>s.toLowerCase().includes(q));
+    const matchCat = activeCategory === "все" || t.category === activeCategory;
+    return matchSearch && matchCat;
+  });
+  filtered.sort((a,b) => {
+    if (sort==="match") return (b.match||0) - (a.match||0);
+    if (sort==="date") return new Date(a.date) - new Date(b.date);
+    if (sort==="quota") return (b.quota-b.filled)-(a.quota-a.filled);
+    return 0;
+  });
+  const sortLabel = sort==="match" ? " · Отсортировано по AI-совпадению" : "";
+  document.getElementById("count-label").innerHTML = `Найдено задач: <strong style="color:var(--text)">${filtered.length}</strong>${sortLabel}`;
+  renderCards(filtered);
+}
+
+function daysUntil(d) { return Math.ceil((new Date(d)-new Date())/86400000); }
+function matchClass(m) { return m>=0.9?"match-high":m>=0.75?"match-mid":"match-low"; }
+
+function renderCards(tasks) {
+  const grid = document.getElementById("task-grid");
+  if (!tasks.length) {
+    grid.innerHTML = `<div class="empty"><div style="font-size:36px;margin-bottom:10px">🔍</div><div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:5px">Задач не найдено</div><div>Попробуй изменить фильтры</div></div>`;
+    return;
+  }
+  grid.innerHTML = tasks.map(t => {
+    const pct = Math.round(t.filled/t.quota*100);
+    const days = daysUntil(t.date);
+    const spots = t.quota - t.filled;
+    const dateClass = days<=3?"date-soon":days<=7?"date-near":"date-ok";
+    const dateLabel = days<=0?"Сегодня!":days===1?"Завтра":`через ${days} дн.`;
+
+    // Match badge
+    let badgeHtml;
+    if (t.match !== null) {
+      const pctMatch = Math.round(t.match*100);
+      badgeHtml = `<div class="match-badge ${matchClass(t.match)}" id="badge-${t.id}">${pctMatch}%</div>`;
+    } else {
+      badgeHtml = `<div class="match-badge match-computing" id="badge-${t.id}">⏳</div>`;
+    }
+
+    // Trust plaque
+    let trustHtml = "";
+    if (t.match !== null && t.match >= 0.55) {
+      const fillW = Math.round(t.match*100);
+      trustHtml = `<div class="trust-plaque" id="trust-${t.id}">
+        <div class="trust-header"><span class="trust-icon">🧠</span><span class="trust-label">ПОЧЕМУ ПОДХОДИТ</span></div>
+        <div class="trust-score-bar">
+          <div class="trust-score-track"><div class="trust-score-fill" style="width:${fillW}%"></div></div>
+          <div class="trust-score-pct">${fillW}%</div>
+        </div>
+        <div class="trust-text">${t.matchReason || "Вычисляю..."}</div>
+      </div>`;
+    } else if (t.match === null) {
+      trustHtml = `<div class="trust-plaque" id="trust-${t.id}">
+        <div class="trust-header"><span class="trust-icon">🧠</span><span class="trust-label">AI МАТЧИНГ</span></div>
+        <div class="trust-loading">Анализирую<span class="trust-dots"><span>.</span><span>.</span><span>.</span></span></div>
+      </div>`;
+    }
+
+    return `
+    <div class="task-card">
+      <div class="card-top">
+        <div class="card-title">${t.title}</div>
+        ${badgeHtml}
+      </div>
+      <div class="meta-col">
+        <div class="meta-item">📅 ${new Date(t.date).toLocaleDateString("ru-RU",{day:"numeric",month:"long"})}<span class="date-badge ${dateClass}">${dateLabel}</span></div>
+        <div class="meta-item">📍 ${t.location}</div>
+        <div class="meta-item">🪑 Осталось мест: <strong style="color:${spots<=2?"#ef4444":"var(--text)"};margin-left:3px">${spots}</strong>&nbsp;из ${t.quota}</div>
+      </div>
+      <div class="skills-row">
+        ${t.hard.map(s=>`<span class="skill-hard">${s}</span>`).join("")}
+        ${t.soft.slice(0,2).map(s=>`<span class="skill-soft">${s}</span>`).join("")}
+      </div>
+      <div class="quota-wrap">
+        <div class="quota-text"><span>Заполнено</span><span style="font-weight:600;color:var(--text)">${t.filled}/${t.quota}</span></div>
+        <div class="quota-bar"><div class="quota-fill${pct>=90?" red":""}" style="width:${pct}%"></div></div>
+      </div>
+      ${trustHtml}
+      <div class="card-actions">
+        <button class="apply-btn" onclick="applyToTask(${t.id})">Откликнуться →</button>
+        <button class="chat-btn" onclick="openChat(${t.id}, event)">🤖 Спросить</button>
+        <button class="verify-btn ${t.verified ? 'verified' : ''}" id="verify-btn-${t.id}" onclick="openCVModal(${t.id}, event)" title="Подтвердить выполнение фото">
+          ${t.verified ? '✅' : '📸'}
+        </button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function applyToTask(id) {
+  const task = TASKS.find(t => t.id === id);
+  showNotif(`✅ Отклик отправлен на задачу «${task.title}»!`);
+}
+
+// ─────────────────────────────────────────────
+// AI MANAGER PROACTIVE NOTIFICATION
+// ─────────────────────────────────────────────
+function simulateAIManagerNotif() {
+  // Task 6 — уход за животными, 1 место осталось, скоро дедлайн
+  const urgentTask = TASKS.find(t => t.id === 6);
+  document.getElementById("notif-text").innerHTML =
+    `Горит дедлайн! Задача <strong>«${urgentTask.title}»</strong> — осталось 1 место, мероприятие через 10 дней. Твои навыки подходят. <span style="color:var(--ai);cursor:pointer;font-weight:600;" onclick="openChat(6,event)">Спроси детали →</span>`;
+  const toast = document.getElementById("notif-toast");
+  toast.classList.add("show");
+  setTimeout(() => toast.classList.remove("show"), 7000);
+}
+
+function showNotif(msg) {
+  document.getElementById("notif-text").innerHTML = msg;
+  document.getElementById("notif-toast").querySelector(".notif-toast-title").textContent = "📋 Sun Proactive";
+  const toast = document.getElementById("notif-toast");
+  toast.classList.add("show");
+  setTimeout(() => toast.classList.remove("show"), 3500);
+}
+
+// ─────────────────────────────────────────────
+// THEME
+// ─────────────────────────────────────────────
+function toggleTheme() {
+  isDark = !isDark;
+  document.body.classList.toggle("light", !isDark);
+  const icon = document.getElementById("theme-icon");
+  document.querySelector(".theme-btn span").textContent = isDark ? "Светлая тема" : "Тёмная тема";
+  icon.innerHTML = isDark
+    ? `<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`
+    : `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`;
+}
+
+// Close modal on overlay click
+document.getElementById("chat-modal").addEventListener("click", function(e) {
+  if (e.target === this) closeChat();
+});
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sun Proactive — Вход и регистрация</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0a;
+      --card: #141414;
+      --text: #f0ede8;
+      --sub: #6b7280;
+      --border: #242424;
+      --input-bg: #0f0f0f;
+      --shadow: 0 8px 48px rgba(0,0,0,0.6);
+      --accent: #10b981;
+      --accent-bg: rgba(16,185,129,0.14);
+      --btn-color: #000;
+      --danger: #ef4444;
+      --success: #10b981;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'DM Sans', 'Helvetica Neue', sans-serif;
+      transition: background 0.3s, color 0.3s;
+      padding: 20px;
+    }
+
+    body.light {
+      --bg: #f0ede8;
+      --card: #ffffff;
+      --text: #1a1a1a;
+      --sub: #6b7280;
+      --border: #e5e0d8;
+      --input-bg: #faf9f7;
+      --shadow: 0 4px 24px rgba(0,0,0,0.09);
+      --btn-color: #fff;
+    }
+
+    body.dark.role-curator   { --accent: #f59e0b; --accent-bg: rgba(245,158,11,0.14); }
+    body.dark.role-volunteer  { --accent: #10b981; --accent-bg: rgba(16,185,129,0.14); }
+    body.light.role-curator   { --accent: #d97706; --accent-bg: rgba(217,119,6,0.12); }
+    body.light.role-volunteer { --accent: #059669; --accent-bg: rgba(5,150,105,0.12); }
+
+    #theme-btn {
+      position: fixed; top: 18px; right: 18px;
+      background: none;
+      border: 1.5px solid var(--border);
+      border-radius: 50px;
+      padding: 8px 14px;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+      color: var(--text); font-size: 12px; font-weight: 500;
+      z-index: 100; font-family: inherit;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 36px;
+      width: 100%; max-width: 420px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      transition: all 0.3s;
+    }
+
+    .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 26px; }
+    .logo-box {
+      width: 34px; height: 34px; border-radius: 9px;
+      background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 60%, transparent));
+      display: flex; align-items: center; justify-content: center; font-size: 16px;
+    }
+    .logo-text { font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+    .logo-sub  { font-size: 10px; color: var(--sub); letter-spacing: 0.6px; text-transform: uppercase; }
+
+    .tabs {
+      display: flex; background: var(--input-bg);
+      border-radius: 10px; padding: 3px; margin-bottom: 26px;
+      border: 1px solid var(--border);
+    }
+    .tab {
+      flex: 1; padding: 9px; border-radius: 8px; border: none;
+      cursor: pointer; font-size: 13px; font-weight: 400;
+      background: transparent; color: var(--sub);
+      transition: all 0.2s; font-family: inherit;
+    }
+    .tab.active {
+      background: var(--card); color: var(--text);
+      font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    }
+
+    .step { display: none; }
+    .step.visible { display: block; }
+
+    .step-title { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 5px; letter-spacing: -0.4px; }
+    .step-sub   { font-size: 13px; color: var(--sub); margin-bottom: 22px; line-height: 1.5; }
+
+    .role-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; margin-bottom: 20px;
+    }
+    .role-card {
+      border: 2px solid var(--border); border-radius: 13px;
+      padding: 18px 12px; cursor: pointer;
+      background: var(--input-bg); transition: all 0.2s;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 9px; text-align: center;
+    }
+    .role-card.selected { border-color: var(--accent); background: var(--accent-bg); }
+    .role-card svg { color: var(--sub); transition: color 0.2s; }
+    .role-card.selected svg { color: var(--accent); }
+    .role-card-title { font-size: 13px; font-weight: 600; color: var(--text); transition: color 0.2s; }
+    .role-card.selected .role-card-title { color: var(--accent); }
+    .role-card-desc { font-size: 11px; color: var(--sub); line-height: 1.4; }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+      background: var(--accent-bg); color: var(--accent);
+      margin-bottom: 18px;
+      border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+    }
+
+    .field { margin-bottom: 12px; }
+    .field.hidden { display: none; }
+
+    label { font-size: 12px; font-weight: 500; color: var(--sub); margin-bottom: 5px; display: block; }
+
+    .input-wrap { position: relative; }
+
+    input {
+      width: 100%; padding: 11px 13px;
+      border-radius: 9px; border: 1.5px solid var(--border);
+      background: var(--input-bg); color: var(--text);
+      font-size: 14px; outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      font-family: inherit;
+    }
+    input::placeholder { color: var(--sub); opacity: 0.6; }
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+    }
+    input.error { border-color: var(--danger); }
+
+    .err-text { font-size: 11px; color: var(--danger); margin-top: 3px; min-height: 14px; }
+
+    .eye-btn {
+      position: absolute; right: 11px; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: var(--sub); display: flex; padding: 2px;
+    }
+
+    .alert {
+      border-radius: 9px; padding: 10px 13px;
+      margin-bottom: 14px; font-size: 13px; display: none;
+    }
+    .alert.show { display: block; }
+    .alert-err {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      color: var(--danger);
+    }
+    .alert-ok {
+      background: rgba(16,185,129,0.1);
+      border: 1px solid rgba(16,185,129,0.25);
+      color: var(--success);
+    }
+
+    .btn {
+      width: 100%; padding: 12px; border-radius: 10px; border: none;
+      background: var(--accent); color: var(--btn-color);
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      margin-top: 6px; transition: all 0.2s; font-family: inherit;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn:not(:disabled):hover { filter: brightness(1.08); }
+
+    .spinner {
+      display: none; width: 15px; height: 15px;
+      border: 2px solid rgba(0,0,0,0.2);
+      border-top-color: currentColor;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    .btn.loading .spinner { display: block; }
+    .btn.loading .btn-label { opacity: 0.5; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .back-btn {
+      background: none; border: none; color: var(--sub);
+      font-size: 12px; cursor: pointer; margin-bottom: 18px;
+      display: flex; align-items: center; gap: 3px;
+      padding: 0; font-family: inherit;
+    }
+    .back-btn:hover { color: var(--text); }
+
+    .helper {
+      margin-top: 14px; color: var(--sub);
+      font-size: 11px; line-height: 1.5; text-align: center;
+    }
+
+    .success-wrap { text-align: center; padding: 16px 0; }
+    .success-emoji { font-size: 44px; margin-bottom: 14px; }
+    .success-title { font-size: 19px; font-weight: 700; color: var(--text); margin-bottom: 7px; }
+    .success-sub   { font-size: 13px; color: var(--sub); line-height: 1.6; }
+    .success-sub strong { color: var(--accent); }
+    .progress-bar  { height: 3px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 22px; }
+    .progress-fill { height: 100%; background: var(--accent); border-radius: 3px; width: 0; transition: width 1.8s ease; }
+  </style>
+</head>
+<body class="dark role-volunteer">
+
+  <button id="theme-btn" type="button">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="5"/>
+      <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+      <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+    <span id="theme-label">Светлая</span>
+  </button>
+
+  <div class="card">
+    <div class="logo">
+      <div class="logo-box">&#9728;&#65039;</div>
+      <div>
+        <div class="logo-text">Sun Proactive</div>
+        <div class="logo-sub">AI-биржа задач</div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" id="tab-login"    type="button">Войти</button>
+      <button class="tab"        id="tab-register" type="button">Регистрация</button>
+    </div>
+
+    <!-- STEP 1: выбор роли -->
+    <div class="step visible" id="step-role">
+      <div class="step-title" id="s1-title">Войдите в аккаунт</div>
+      <div class="step-sub">Выберите вашу роль в системе</div>
+
+      <div class="role-grid">
+        <div class="role-card" data-role="curator">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="2" y="3" width="20" height="14" rx="2"/>
+            <path d="M8 21h8M12 17v4"/><path d="M7 8h4M7 11h6"/>
+          </svg>
+          <div>
+            <div class="role-card-title">Куратор</div>
+            <div class="role-card-desc">Создаю задачи и управляю проектами</div>
+          </div>
+        </div>
+        <div class="role-card selected" data-role="volunteer">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+          <div>
+            <div class="role-card-title">Волонтёр</div>
+            <div class="role-card-desc">Хочу помогать и участвовать</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn" id="continue-btn" type="button">
+        <span class="btn-label">Продолжить →</span>
+      </button>
+    </div>
+
+    <!-- STEP 2: форма -->
+    <div class="step" id="step-form">
+      <button class="back-btn" id="back-btn" type="button">&#8592; Назад</button>
+
+      <div class="badge" id="role-badge">&#127807; Волонтёр</div>
+      <div class="step-title" id="s2-title">Введите данные</div>
+
+      <div class="alert alert-err" id="alert-err"></div>
+      <div class="alert alert-ok"  id="alert-ok"></div>
+
+      <div class="field hidden" id="name-field">
+        <label for="input-name">Имя</label>
+        <input type="text" id="input-name" placeholder="Ваше имя" autocomplete="name" />
+        <div class="err-text" id="err-name"></div>
+      </div>
+
+      <div class="field">
+        <label for="input-email">Email</label>
+        <input type="email" id="input-email" placeholder="you@example.com" autocomplete="email" />
+        <div class="err-text" id="err-email"></div>
+      </div>
+
+      <div class="field">
+        <label for="input-password">Пароль</label>
+        <div class="input-wrap">
+          <input type="password" id="input-password" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;" autocomplete="current-password" />
+          <button class="eye-btn" id="toggle-pass" type="button" title="Показать пароль">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+              <line x1="1" y1="1" x2="23" y2="23"/>
+            </svg>
+          </button>
+        </div>
+        <div class="err-text" id="err-password"></div>
+      </div>
+
+      <button class="btn" id="submit-btn" type="button">
+        <span class="spinner"></span>
+        <span class="btn-label" id="submit-label">Войти</span>
+      </button>
+
+      <div class="helper">
+        Куратор &#8594; curator-profile.html &middot; Волонтёр &#8594; volunteer-profile.html
+      </div>
+    </div>
+
+    <!-- STEP 3: успех -->
+    <div class="step" id="step-success">
+      <div class="success-wrap">
+        <div class="success-emoji" id="s-emoji">&#127807;</div>
+        <div class="success-title" id="s-title">Добро пожаловать!</div>
+        <div class="success-sub"   id="s-sub">Переходим в кабинет...</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+  /* ─── Supabase ─────────────────────────────────────── */
+  const SUPABASE_URL      = "https://rluhddvevpmmiulisyuf.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJsdWhkZHZldnBtbWl1bGlzeXVmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDMzNTksImV4cCI6MjA5MDQxOTM1OX0.zEixUTeTPzVu-BFdcQryWFqBlQSTC_VM2srkl9zOkbM";
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  /* ─── State ────────────────────────────────────────── */
+  let mode = "login";
+  let role = "volunteer";
+
+  /* ─── DOM ──────────────────────────────────────────── */
+  const $ = id => document.getElementById(id);
+  const body        = document.body;
+  const tabLogin    = $("tab-login");
+  const tabRegister = $("tab-register");
+  const stepRole    = $("step-role");
+  const stepForm    = $("step-form");
+  const stepSuccess = $("step-success");
+  const continueBtn = $("continue-btn");
+  const backBtn     = $("back-btn");
+  const submitBtn   = $("submit-btn");
+  const submitLabel = $("submit-label");
+  const nameField   = $("name-field");
+  const inputName   = $("input-name");
+  const inputEmail  = $("input-email");
+  const inputPass   = $("input-password");
+  const roleBadge   = $("role-badge");
+  const alertErr    = $("alert-err");
+  const alertOk     = $("alert-ok");
+  const themeBtn    = $("theme-btn");
+  const themeLabel  = $("theme-label");
+  const roleCards   = document.querySelectorAll(".role-card");
+
+  /* ─── UI helpers ───────────────────────────────────── */
+  function showStep(el) {
+    [stepRole, stepForm, stepSuccess].forEach(s => s.classList.remove("visible"));
+    el.classList.add("visible");
+  }
+
+  function showErr(msg) {
+    alertErr.textContent = msg;
+    alertErr.classList.add("show");
+    alertOk.classList.remove("show");
+  }
+  function showOk(msg) {
+    alertOk.textContent = msg;
+    alertOk.classList.add("show");
+    alertErr.classList.remove("show");
+  }
+  function clearAlerts() {
+    alertErr.classList.remove("show");
+    alertOk.classList.remove("show");
+  }
+
+  function setLoading(on) {
+    submitBtn.disabled = on;
+    submitBtn.classList.toggle("loading", on);
+  }
+
+  function updateRoleUI() {
+    roleCards.forEach(c => c.classList.remove("selected"));
+    document.querySelector(`.role-card[data-role="${role}"]`)?.classList.add("selected");
+    body.classList.remove("role-curator", "role-volunteer");
+    body.classList.add(role === "curator" ? "role-curator" : "role-volunteer");
+    roleBadge.textContent = role === "curator" ? "\uD83D\uDDA5 Куратор" : "\uD83C\uDF31 Волонтёр";
+  }
+
+  function applyMode() {
+    const isLogin = mode === "login";
+    tabLogin.classList.toggle("active", isLogin);
+    tabRegister.classList.toggle("active", !isLogin);
+    $("s1-title").textContent  = isLogin ? "Войдите в аккаунт"  : "Создайте аккаунт";
+    $("s2-title").textContent  = isLogin ? "Введите данные"      : "Заполните профиль";
+    submitLabel.textContent    = isLogin ? "Войти"               : "Зарегистрироваться";
+    nameField.classList.toggle("hidden", isLogin);
+    clearAlerts();
+    updateRoleUI();
+    showStep(stepRole);
+  }
+
+  /* ─── Theme ────────────────────────────────────────── */
+  themeBtn.addEventListener("click", () => {
+    const isLight = body.classList.contains("light");
+    body.classList.toggle("light", !isLight);
+    body.classList.toggle("dark",  isLight);
+    themeLabel.textContent = isLight ? "Светлая" : "Тёмная";
+  });
+
+  /* ─── Tabs ─────────────────────────────────────────── */
+  tabLogin.addEventListener("click",    () => { mode = "login";    applyMode(); });
+  tabRegister.addEventListener("click", () => { mode = "register"; applyMode(); });
+
+  /* ─── Role cards ───────────────────────────────────── */
+  roleCards.forEach(card => {
+    card.addEventListener("click", () => {
+      role = card.dataset.role;
+      updateRoleUI();
+    });
+  });
+
+  /* ─── Navigation ───────────────────────────────────── */
+  continueBtn.addEventListener("click", () => { clearAlerts(); showStep(stepForm); });
+  backBtn.addEventListener("click",     () => { clearAlerts(); showStep(stepRole); });
+
+  /* ─── Password toggle ──────────────────────────────── */
+  $("toggle-pass").addEventListener("click", () => {
+    inputPass.type = inputPass.type === "password" ? "text" : "password";
+  });
+
+  /* ─── Validation ───────────────────────────────────── */
+  function clearFieldErr(inputEl, errId) {
+    inputEl.classList.remove("error");
+    $(errId).textContent = "";
+  }
+  function fieldErr(inputEl, errId, msg) {
+    inputEl.classList.add("error");
+    $(errId).textContent = msg;
+  }
+
+  function validate() {
+    let ok = true;
+    clearFieldErr(inputEmail,  "err-email");
+    clearFieldErr(inputPass,   "err-password");
+    if (mode === "register") clearFieldErr(inputName, "err-name");
+
+    if (mode === "register" && !inputName.value.trim()) {
+      fieldErr(inputName, "err-name", "Введите имя"); ok = false;
+    }
+
+    const email = inputEmail.value.trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      fieldErr(inputEmail, "err-email", "Введите корректный email"); ok = false;
+    }
+
+    if (inputPass.value.length < 6) {
+      fieldErr(inputPass, "err-password", "Минимум 6 символов"); ok = false;
+    }
+
+    return ok;
+  }
+
+  /* ─── Success screen ───────────────────────────────── */
+  function showSuccess(action) {
+    const isCurator = role === "curator";
+    $("s-emoji").textContent = isCurator ? "\uD83D\uDDA5" : "\uD83C\uDF31";
+    $("s-title").textContent = action === "register" ? "Аккаунт создан!" : "Добро пожаловать!";
+    $("s-sub").innerHTML = `Вы вошли как <strong>${isCurator ? "Куратор" : "Волонтёр"}</strong>.<br>Переходим в кабинет...`;
+    showStep(stepSuccess);
+    requestAnimationFrame(() => { $("progress-fill").style.width = "100%"; });
+    setTimeout(() => {
+      window.location.href = isCurator ? "curator-profile.html" : "volunteer-profile.html";
+    }, 1900);
+  }
+
+  /* ─── Translate Supabase errors ────────────────────── */
+  function friendlyError(msg) {
+    if (msg.includes("Invalid login credentials"))   return "Неверный email или пароль";
+    if (msg.includes("Email not confirmed"))          return "Подтвердите email — письмо уже у вас в почте";
+    if (msg.includes("User already registered") ||
+        msg.includes("already registered"))           return "Этот email уже зарегистрирован. Войдите в аккаунт.";
+    if (msg.includes("Password should be"))           return "Пароль слишком слабый (минимум 6 символов)";
+    if (msg.includes("Unable to validate email"))     return "Некорректный email";
+    if (msg.includes("rate limit") ||
+        msg.includes("too many"))                     return "Слишком много попыток. Подождите немного.";
+    return msg;
+  }
+
+  /* ─── AUTH ─────────────────────────────────────────── */
+  submitBtn.addEventListener("click", async () => {
+    if (!validate()) return;
+
+    const email    = inputEmail.value.trim();
+    const password = inputPass.value;
+    const fullName = inputName.value.trim();
+
+    setLoading(true);
+    clearAlerts();
+
+    // Диагностика перед запросом
+    if (window.location.protocol === "file:") {
+      showErr("⚠️ Файл открыт через file:// — используй VS Code Live Server или: npx serve .");
+      setLoading(false);
+      return;
+    }
+
+    // Пинг Supabase
+    try {
+      await fetch(`${SUPABASE_URL}/auth/v1/settings`, {
+        headers: { apikey: SUPABASE_ANON_KEY }
+      });
+    } catch {
+      showErr("⚠️ Supabase не отвечает. Проект на паузе — зайди на supabase.com/dashboard → Restore project");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      if (mode === "login") {
+        /* ── ВХОД ── */
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) { showErr(friendlyError(error.message)); return; }
+
+        // Читаем роль из метаданных (сохранённых при регистрации)
+        role = data.user.user_metadata?.role || "volunteer";
+        updateRoleUI();
+        showSuccess("login");
+
+      } else {
+        /* ── РЕГИСТРАЦИЯ ── */
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { full_name: fullName, role: role }
+          }
+        });
+
+        if (error) { showErr(friendlyError(error.message)); return; }
+
+        if (data.session) {
+          // Email confirmation ВЫКЛЮЧЕН в Supabase → сразу есть сессия
+          showSuccess("register");
+        } else {
+          // Email confirmation ВКЛЮЧЁН → просим подтвердить
+          showOk("✅ Письмо отправлено! Подтвердите email, затем войдите.");
+        }
+      }
+
+    } catch (err) {
+      console.error(err);
+      if (err instanceof TypeError && err.message.includes("fetch")) {
+        showErr("Нет соединения с сервером. Проверьте интернет.");
+      } else {
+        showErr("Что-то пошло не так. Попробуйте ещё раз.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  });
+
+  /* ─── Enter submits ────────────────────────────────── */
+  [inputName, inputEmail, inputPass].forEach(el => {
+    el.addEventListener("keydown", e => { if (e.key === "Enter") submitBtn.click(); });
+  });
+
+  /* ─── Init ─────────────────────────────────────────── */
+  applyMode();
+  </script>
+</body>
+</html>

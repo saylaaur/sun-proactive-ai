@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sun Proactive — Мои отклики</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{
+      --bg:#080808;--sidebar:#0f0f0f;--card:#141414;--card2:#1a1a1a;
+      --text:#f0ede8;--sub:#5a5a5a;--border:#1f1f1f;--input-bg:#0f0f0f;
+      --accent:#10b981;--accent-bg:rgba(16,185,129,0.1);--accent-border:rgba(16,185,129,0.25);
+      --amber:#f59e0b;--red:#ef4444;--blue:#818cf8;
+      --shadow:0 4px 24px rgba(0,0,0,0.5);
+    }
+    body.light{
+      --bg:#f0f7f4;--sidebar:#ffffff;--card:#ffffff;--card2:#f5faf8;
+      --text:#1a1a1a;--sub:#9ca3af;--border:#e2ede9;--input-bg:#f5faf8;
+      --accent:#059669;--accent-bg:rgba(5,150,105,0.08);--accent-border:rgba(5,150,105,0.2);
+      --amber:#d97706;--red:#dc2626;--blue:#4f46e5;
+      --shadow:0 2px 12px rgba(0,0,0,0.06);
+    }
+    body{display:flex;min-height:100vh;background:var(--bg);font-family:'DM Sans','Helvetica Neue',sans-serif;color:var(--text);}
+    .sidebar{width:230px;min-height:100vh;background:var(--sidebar);border-right:1px solid var(--border);padding:22px 14px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;flex-shrink:0;}
+    .logo{display:flex;align-items:center;gap:9px;padding:0 8px;margin-bottom:26px;}
+    .logo-box{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 50%,transparent));display:flex;align-items:center;justify-content:center;font-size:16px;}
+    .logo-text{font-size:14px;font-weight:700;color:var(--text);}
+    .nav-link{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;font-size:14px;color:var(--sub);border:1px solid transparent;text-decoration:none;transition:all .15s;background:transparent;}
+    .nav-link.active{background:var(--accent-bg);color:var(--accent);font-weight:700;border-color:var(--accent-border);}
+    .nav-link:hover:not(.active){background:color-mix(in srgb,var(--border) 70%,transparent);}
+    .main{flex:1;display:flex;flex-direction:column;min-width:0;}
+    .topbar{padding:18px 28px;border-bottom:1px solid var(--border);background:var(--sidebar);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
+    .topbar-title{font-size:16px;font-weight:700;}
+    .topbar-right{display:flex;align-items:center;gap:10px;}
+    .topbar-name{font-size:13px;color:var(--sub);}
+    .theme-btn,.logout-btn{
+      border:1px solid var(--border);background:transparent;color:var(--sub);border-radius:10px;
+      padding:9px 12px;font-family:inherit;cursor:pointer;font-size:12px;
+    }
+    .body{padding:24px 28px;max-width:1100px;width:100%;margin:0 auto;}
+    .hero{margin-bottom:18px;}
+    .hero-title{font-size:26px;font-weight:700;margin-bottom:6px;}
+    .hero-sub{font-size:14px;color:var(--sub);}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0;}
+    .stat{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow);}
+    .stat-label{font-size:12px;color:var(--sub);margin-bottom:8px;}
+    .stat-value{font-size:26px;font-weight:700;}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
+    .search{flex:1;min-width:220px;}
+    .search input,.filter-select{
+      width:100%;padding:11px 13px;border-radius:11px;border:1.5px solid var(--border);
+      background:var(--input-bg);color:var(--text);font-size:13px;outline:none;font-family:inherit;
+    }
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;}
+    .card{
+      background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;
+      box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px;
+    }
+    .card-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;}
+    .card-title{font-size:15px;font-weight:700;line-height:1.4;}
+    .status{
+      padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap;border:1px solid transparent;
+    }
+    .status.pending{background:rgba(245,158,11,.12);color:var(--amber);border-color:rgba(245,158,11,.25);}
+    .status.approved{background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border);}
+    .status.rejected{background:rgba(239,68,68,.10);color:var(--red);border-color:rgba(239,68,68,.25);}
+    .status.completed{background:rgba(99,102,241,.10);color:var(--blue);border-color:rgba(99,102,241,.25);}
+    .meta{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--sub);}
+    .desc{font-size:13px;color:var(--text);line-height:1.6;opacity:.92;}
+    .footer-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:auto;padding-top:6px;}
+    .small{font-size:11px;color:var(--sub);}
+    .btn{
+      border:none;background:var(--accent);color:#fff;border-radius:10px;padding:10px 14px;
+      font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;
+    }
+    .empty{
+      background:var(--card);border:1px dashed var(--border);border-radius:16px;padding:28px;text-align:center;
+      color:var(--sub);
+    }
+    .hidden{display:none!important;}
+    @media (max-width: 900px){
+      .sidebar{width:86px;padding:18px 10px;}
+      .logo-text,.nav-link span{display:none;}
+      .stats{grid-template-columns:repeat(2,1fr);}
+    }
+  </style>
+</head>
+<body class="dark">
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-box">☀️</div>
+      <div class="logo-text">Sun Proactive</div>
+    </div>
+
+    <a class="nav-link" href="volunteer-tasks.html">📋 <span>Задачи</span></a>
+    <a class="nav-link" href="volunteer-profile.html">🧑🏻‍💼 <span>Профиль</span></a>
+    <a class="nav-link active" href="volunteer-applications.html">📩 <span>Мои отклики</span></a>
+    <a class="nav-link" href="volunteer-achievements.html">🏆 <span>Достижения</span></a>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-title">Мои отклики</div>
+      <div class="topbar-right">
+        <div class="topbar-name" id="topbar-name">Загрузка...</div>
+        <button class="theme-btn" id="theme-btn" type="button">Тема</button>
+        <button class="logout-btn" id="logout-btn" type="button">Выйти</button>
+      </div>
+    </div>
+
+    <div class="body">
+      <div class="hero">
+        <div class="hero-title">Мои отклики</div>
+        <div class="hero-sub">История ваших заявок на волонтёрские задачи</div>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-label">Всего откликов</div>
+          <div class="stat-value" id="stat-total">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">На рассмотрении</div>
+          <div class="stat-value" id="stat-pending">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Одобрено</div>
+          <div class="stat-value" id="stat-approved">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Завершено</div>
+          <div class="stat-value" id="stat-completed">0</div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="search">
+          <input id="search-input" type="text" placeholder="Поиск по названию задачи..." />
+        </div>
+        <select class="filter-select" id="status-filter">
+          <option value="all">Все статусы</option>
+          <option value="pending">На рассмотрении</option>
+          <option value="approved">Одобрено</option>
+          <option value="rejected">Отклонено</option>
+          <option value="completed">Завершено</option>
+        </select>
+      </div>
+
+      <div id="empty-state" class="empty hidden">
+        У вас пока нет откликов.
+      </div>
+
+      <div class="grid" id="applications-grid"></div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { getMyApplications, getMyProfile, signOutUser } from "./supabase-sync.js";
+
+    const topbarName = document.getElementById("topbar-name");
+    const grid = document.getElementById("applications-grid");
+    const emptyState = document.getElementById("empty-state");
+    const searchInput = document.getElementById("search-input");
+    const statusFilter = document.getElementById("status-filter");
+    const themeBtn = document.getElementById("theme-btn");
+    const logoutBtn = document.getElementById("logout-btn");
+
+    const statTotal = document.getElementById("stat-total");
+    const statPending = document.getElementById("stat-pending");
+    const statApproved = document.getElementById("stat-approved");
+    const statCompleted = document.getElementById("stat-completed");
+
+    let allApplications = [];
+
+    function formatStatus(status) {
+      if (status === "pending") return "На рассмотрении";
+      if (status === "approved") return "Одобрено";
+      if (status === "rejected") return "Отклонено";
+      if (status === "completed") return "Завершено";
+      return status || "Неизвестно";
+    }
+
+    function formatDate(value) {
+      if (!value) return "Дата не указана";
+      return new Date(value).toLocaleDateString("ru-RU");
+    }
+
+    function updateStats(items) {
+      statTotal.textContent = items.length;
+      statPending.textContent = items.filter(i => i.status === "pending").length;
+      statApproved.textContent = items.filter(i => i.status === "approved").length;
+      statCompleted.textContent = items.filter(i => i.status === "completed").length;
+    }
+
+    function renderCards(items) {
+      grid.innerHTML = "";
+
+      if (!items.length) {
+        emptyState.classList.remove("hidden");
+        return;
+      }
+
+      emptyState.classList.add("hidden");
+
+      for (const app of items) {
+        const task = app.tasks || {};
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <div class="card-top">
+            <div class="card-title">${task.title || "Без названия"}</div>
+            <div class="status ${app.status}">${formatStatus(app.status)}</div>
+          </div>
+
+          <div class="meta">
+            <div>📍 ${task.location || "Локация не указана"}</div>
+            <div>📅 ${formatDate(task.event_date)}</div>
+            <div>🕒 Отклик: ${formatDate(app.created_at)}</div>
+          </div>
+
+          <div class="desc">${task.description || "Описание отсутствует."}</div>
+
+          <div class="footer-row">
+            <div class="small">ID задачи: ${task.id || "—"}</div>
+            <button class="btn" data-task-id="${task.id || ""}">Подробнее</button>
+          </div>
+        `;
+        div.querySelector(".btn").addEventListener("click", () => {
+          if (task.id) {
+            window.location.href = `volunteer-tasks.html?task=${task.id}`;
+          }
+        });
+        grid.appendChild(div);
+      }
+    }
+
+    function applyFilters() {
+      const q = searchInput.value.trim().toLowerCase();
+      const status = statusFilter.value;
+
+      const filtered = allApplications.filter(app => {
+        const title = (app.tasks?.title || "").toLowerCase();
+        const matchesSearch = !q || title.includes(q);
+        const matchesStatus = status === "all" || app.status === status;
+        return matchesSearch && matchesStatus;
+      });
+
+      updateStats(allApplications);
+      renderCards(filtered);
+    }
+
+    async function init() {
+      const profile = await getMyProfile();
+      topbarName.textContent = profile?.full_name || "Волонтёр";
+
+      allApplications = await getMyApplications();
+      updateStats(allApplications);
+      renderCards(allApplications);
+    }
+
+    themeBtn.addEventListener("click", () => {
+      document.body.classList.toggle("light");
+      document.body.classList.toggle("dark");
+    });
+
+    logoutBtn.addEventListener("click", async () => {
+      await signOutUser();
+      window.location.href = "sun-auth-supabase.html";
+    });
+
+    searchInput.addEventListener("input", applyFilters);
+    statusFilter.addEventListener("change", applyFilters);
+
+    init();
+  </script>
+</body>
+</html>

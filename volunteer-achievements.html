@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sun Proactive — Достижения</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{
+      --bg:#080808;--sidebar:#0f0f0f;--card:#141414;--card2:#1a1a1a;
+      --text:#f0ede8;--sub:#5a5a5a;--border:#1f1f1f;--input-bg:#0f0f0f;
+      --accent:#10b981;--accent-bg:rgba(16,185,129,0.1);--accent-border:rgba(16,185,129,0.25);
+      --indigo:#818cf8;--amber:#f59e0b;--shadow:0 4px 24px rgba(0,0,0,0.5);
+    }
+    body.light{
+      --bg:#f0f7f4;--sidebar:#ffffff;--card:#ffffff;--card2:#f5faf8;
+      --text:#1a1a1a;--sub:#9ca3af;--border:#e2ede9;--input-bg:#f5faf8;
+      --accent:#059669;--accent-bg:rgba(5,150,105,0.08);--accent-border:rgba(5,150,105,0.2);
+      --indigo:#4f46e5;--amber:#d97706;--shadow:0 2px 12px rgba(0,0,0,0.06);
+    }
+    body{display:flex;min-height:100vh;background:var(--bg);font-family:'DM Sans','Helvetica Neue',sans-serif;color:var(--text);}
+    .sidebar{width:230px;min-height:100vh;background:var(--sidebar);border-right:1px solid var(--border);padding:22px 14px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;flex-shrink:0;}
+    .logo{display:flex;align-items:center;gap:9px;padding:0 8px;margin-bottom:26px;}
+    .logo-box{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 50%,transparent));display:flex;align-items:center;justify-content:center;font-size:16px;}
+    .logo-text{font-size:14px;font-weight:700;color:var(--text);}
+    .nav-link{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;font-size:14px;color:var(--sub);border:1px solid transparent;text-decoration:none;transition:all .15s;background:transparent;}
+    .nav-link.active{background:var(--accent-bg);color:var(--accent);font-weight:700;border-color:var(--accent-border);}
+    .nav-link:hover:not(.active){background:color-mix(in srgb,var(--border) 70%,transparent);}
+    .main{flex:1;display:flex;flex-direction:column;min-width:0;}
+    .topbar{padding:18px 28px;border-bottom:1px solid var(--border);background:var(--sidebar);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
+    .topbar-title{font-size:16px;font-weight:700;}
+    .topbar-right{display:flex;align-items:center;gap:10px;}
+    .topbar-name{font-size:13px;color:var(--sub);}
+    .theme-btn,.logout-btn{
+      border:1px solid var(--border);background:transparent;color:var(--sub);border-radius:10px;
+      padding:9px 12px;font-family:inherit;cursor:pointer;font-size:12px;
+    }
+    .body{padding:24px 28px;max-width:1100px;width:100%;margin:0 auto;}
+    .hero-title{font-size:26px;font-weight:700;margin-bottom:6px;}
+    .hero-sub{font-size:14px;color:var(--sub);margin-bottom:18px;}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+    .stat{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow);}
+    .stat-label{font-size:12px;color:var(--sub);margin-bottom:8px;}
+    .stat-value{font-size:26px;font-weight:700;}
+    .section{margin-top:18px;}
+    .section-title{font-size:16px;font-weight:700;margin-bottom:12px;}
+    .badges-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;}
+    .badge-card{
+      background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;
+      box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px;
+    }
+    .badge-top{display:flex;align-items:center;gap:12px;}
+    .badge-icon{
+      width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+      font-size:22px;background:var(--accent-bg);border:1px solid var(--accent-border);
+    }
+    .badge-name{font-size:15px;font-weight:700;}
+    .badge-desc{font-size:13px;color:var(--sub);line-height:1.6;}
+    .badge-status{
+      display:inline-flex;align-items:center;width:fit-content;padding:5px 10px;border-radius:999px;
+      font-size:11px;font-weight:700;border:1px solid transparent;
+    }
+    .badge-status.got{background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border);}
+    .badge-status.locked{background:rgba(99,102,241,.10);color:var(--indigo);border-color:rgba(99,102,241,.25);}
+    .progress-card,.activity-card{
+      background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:var(--shadow);
+    }
+    .progress-label{font-size:13px;color:var(--sub);margin-bottom:10px;}
+    .progress-bar{height:10px;background:var(--border);border-radius:999px;overflow:hidden;margin-bottom:10px;}
+    .progress-fill{height:100%;background:var(--accent);border-radius:999px;}
+    .activity-list{display:flex;flex-direction:column;gap:10px;}
+    .activity-item{
+      display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);
+      font-size:13px;
+    }
+    .activity-item:last-child{border-bottom:none;}
+    .muted{color:var(--sub);}
+    @media (max-width:900px){
+      .sidebar{width:86px;padding:18px 10px;}
+      .logo-text,.nav-link span{display:none;}
+      .stats{grid-template-columns:repeat(2,1fr);}
+    }
+  </style>
+</head>
+<body class="dark">
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-box">☀️</div>
+      <div class="logo-text">Sun Proactive</div>
+    </div>
+
+    <a class="nav-link" href="volunteer-tasks.html">📋 <span>Задачи</span></a>
+    <a class="nav-link" href="volunteer-profile.html">🧑🏻‍💼 <span>Профиль</span></a>
+    <a class="nav-link" href="volunteer-applications.html">📩 <span>Мои отклики</span></a>
+    <a class="nav-link active" href="volunteer-achievements.html">🏆 <span>Достижения</span></a>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-title">Достижения</div>
+      <div class="topbar-right">
+        <div class="topbar-name" id="topbar-name">Загрузка...</div>
+        <button class="theme-btn" id="theme-btn" type="button">Тема</button>
+        <button class="logout-btn" id="logout-btn" type="button">Выйти</button>
+      </div>
+    </div>
+
+    <div class="body">
+      <div class="hero-title">Достижения</div>
+      <div class="hero-sub">Ваш прогресс и вклад в сообщество</div>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-label">Выполнено задач</div>
+          <div class="stat-value" id="done-count">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Волонтёрских часов</div>
+          <div class="stat-value" id="hours-count">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Получено бейджей</div>
+          <div class="stat-value" id="badges-count">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Уровень</div>
+          <div class="stat-value" id="level-name">Новичок</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Прогресс до следующего уровня</div>
+        <div class="progress-card">
+          <div class="progress-label" id="progress-label">0 / 3 выполненных задач</div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+          </div>
+          <div class="muted" id="next-level-text">Следующий уровень: Активист</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Бейджи</div>
+        <div class="badges-grid" id="badges-grid"></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Последняя активность</div>
+        <div class="activity-card">
+          <div class="activity-list" id="activity-list"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { getMyApplications, getMyProfile, signOutUser } from "./supabase-sync.js";
+
+    const topbarName = document.getElementById("topbar-name");
+    const doneCount = document.getElementById("done-count");
+    const hoursCount = document.getElementById("hours-count");
+    const badgesCount = document.getElementById("badges-count");
+    const levelName = document.getElementById("level-name");
+    const progressLabel = document.getElementById("progress-label");
+    const progressFill = document.getElementById("progress-fill");
+    const nextLevelText = document.getElementById("next-level-text");
+    const badgesGrid = document.getElementById("badges-grid");
+    const activityList = document.getElementById("activity-list");
+    const themeBtn = document.getElementById("theme-btn");
+    const logoutBtn = document.getElementById("logout-btn");
+
+    function formatDate(value) {
+      if (!value) return "Без даты";
+      return new Date(value).toLocaleDateString("ru-RU");
+    }
+
+    function getLevel(done) {
+      if (done >= 10) return { name: "Лидер", next: "Максимальный уровень", target: 10 };
+      if (done >= 5) return { name: "Активист", next: "Лидер", target: 10 };
+      return { name: "Новичок", next: "Активист", target: 5 };
+    }
+
+    function buildBadges(done, totalApps) {
+      return [
+        {
+          icon: "🚀",
+          name: "Первый отклик",
+          desc: "Вы сделали первый шаг и откликнулись на задачу.",
+          got: totalApps >= 1
+        },
+        {
+          icon: "✅",
+          name: "Первое завершение",
+          desc: "Вы успешно завершили первую социальную задачу.",
+          got: done >= 1
+        },
+        {
+          icon: "🤝",
+          name: "Командный игрок",
+          desc: "Вы несколько раз участвовали в общих инициативах.",
+          got: done >= 3
+        },
+        {
+          icon: "🌟",
+          name: "5 добрых дел",
+          desc: "Вы выполнили пять задач и стали активистом платформы.",
+          got: done >= 5
+        },
+        {
+          icon: "🏆",
+          name: "Надёжный волонтёр",
+          desc: "Десять выполненных задач — высокий уровень доверия.",
+          got: done >= 10
+        }
+      ];
+    }
+
+    function renderBadges(badges) {
+      badgesGrid.innerHTML = "";
+      for (const badge of badges) {
+        const div = document.createElement("div");
+        div.className = "badge-card";
+        div.innerHTML = `
+          <div class="badge-top">
+            <div class="badge-icon">${badge.icon}</div>
+            <div>
+              <div class="badge-name">${badge.name}</div>
+              <div class="badge-status ${badge.got ? "got" : "locked"}">
+                ${badge.got ? "Получен" : "Не получен"}
+              </div>
+            </div>
+          </div>
+          <div class="badge-desc">${badge.desc}</div>
+        `;
+        badgesGrid.appendChild(div);
+      }
+    }
+
+    function renderActivity(apps) {
+      activityList.innerHTML = "";
+      const recent = [...apps].slice(0, 5);
+
+      if (!recent.length) {
+        activityList.innerHTML = `<div class="muted">Пока нет активности.</div>`;
+        return;
+      }
+
+      for (const app of recent) {
+        const row = document.createElement("div");
+        row.className = "activity-item";
+        row.innerHTML = `
+          <div>
+            <div>${app.tasks?.title || "Задача без названия"}</div>
+            <div class="muted">${app.status === "completed" ? "Задача завершена" : "Отклик отправлен / обновлён"}</div>
+          </div>
+          <div class="muted">${formatDate(app.created_at)}</div>
+        `;
+        activityList.appendChild(row);
+      }
+    }
+
+    async function init() {
+      const profile = await getMyProfile();
+      topbarName.textContent = profile?.full_name || "Волонтёр";
+
+      const apps = await getMyApplications();
+      const done = apps.filter(a => a.status === "completed").length;
+      const totalApps = apps.length;
+      const hours = done * 4; // пока простая формула для MVP
+      const level = getLevel(done);
+      const badges = buildBadges(done, totalApps);
+      const gotCount = badges.filter(b => b.got).length;
+
+      doneCount.textContent = done;
+      hoursCount.textContent = hours;
+      badgesCount.textContent = gotCount;
+      levelName.textContent = level.name;
+
+      const progressMax = level.target;
+      const progressValue = Math.min(done, progressMax);
+      const percent = Math.min((progressValue / progressMax) * 100, 100);
+
+      progressLabel.textContent = `${progressValue} / ${progressMax} выполненных задач`;
+      progressFill.style.width = `${percent}%`;
+      nextLevelText.textContent = level.next === "Максимальный уровень"
+        ? "Вы достигли максимального уровня"
+        : `Следующий уровень: ${level.next}`;
+
+      renderBadges(badges);
+      renderActivity(apps);
+    }
+
+    themeBtn.addEventListener("click", () => {
+      document.body.classList.toggle("light");
+      document.body.classList.toggle("dark");
+    });
+
+    logoutBtn.addEventListener("click", async () => {
+      await signOutUser();
+      window.location.href = "sun-auth-supabase.html";
+    });
+
+    init();
+  </script>
+</body>
+</html>

@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Sun Proactive — Аналитика</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#080808;--sidebar:#0d0d0d;--card:#141414;--card2:#1a1a1a;--card3:#111111;
+  --text:#f0ede8;--sub:#505050;--sub2:#3a3a3a;--border:#1e1e1e;--border2:#252525;
+  --accent:#10b981;--accent-bg:rgba(16,185,129,0.08);--accent-border:rgba(16,185,129,0.2);
+  --red:#ef4444;--red-bg:rgba(239,68,68,0.08);--red-border:rgba(239,68,68,0.2);
+  --amber:#f59e0b;--amber-bg:rgba(245,158,11,0.08);--amber-border:rgba(245,158,11,0.2);
+  --indigo:#818cf8;--indigo-bg:rgba(99,102,241,0.08);--indigo-border:rgba(99,102,241,0.2);
+  --shadow:0 2px 16px rgba(0,0,0,0.4);
+}
+body.light{
+  --bg:#f4f7f5;--sidebar:#ffffff;--card:#ffffff;--card2:#f0f5f2;--card3:#fafcfb;
+  --text:#111111;--sub:#9ca3af;--sub2:#d1d5db;--border:#e5ede9;--border2:#dce8e2;
+  --accent:#059669;--accent-bg:rgba(5,150,105,0.07);--accent-border:rgba(5,150,105,0.2);
+  --red:#dc2626;--red-bg:rgba(220,38,38,0.07);--red-border:rgba(220,38,38,0.2);
+  --amber:#d97706;--amber-bg:rgba(217,119,6,0.07);--amber-border:rgba(217,119,6,0.2);
+  --indigo:#4f46e5;--indigo-bg:rgba(79,70,229,0.07);--indigo-border:rgba(79,70,229,0.2);
+  --shadow:0 1px 8px rgba(0,0,0,0.07);
+}
+html,body{height:100%;font-family:'DM Sans','Helvetica Neue',sans-serif;background:var(--bg);color:var(--text);transition:background 0.3s,color 0.3s;}
+.layout{display:flex;min-height:100vh;}
+.sidebar{width:220px;min-height:100vh;background:var(--sidebar);border-right:1px solid var(--border);padding:20px 14px;display:flex;flex-direction:column;gap:2px;position:sticky;top:0;flex-shrink:0;}
+.logo{display:flex;align-items:center;gap:9px;padding:0 8px;margin-bottom:24px;}
+.logo-box{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 45%,transparent));display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.logo-text{font-size:13px;font-weight:700;color:var(--text);}
+.logo-badge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border);margin-left:2px;}
+.nav-section{font-size:10px;font-weight:700;color:var(--sub2);letter-spacing:0.8px;padding:0 8px;margin:14px 0 5px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:12.5px;font-weight:400;color:var(--sub);border:1px solid transparent;transition:all 0.15s;background:transparent;text-decoration:none;width:100%;}
+.nav-item.active{background:var(--accent-bg);color:var(--accent);font-weight:600;border-color:var(--accent-border);}
+.nav-item:hover:not(.active){background:var(--card2);color:var(--text);}
+.nav-item .badge{margin-left:auto;background:var(--red-bg);color:var(--red);border:1px solid var(--red-border);font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;}
+.nav-item .badge.green{background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border);}
+.sidebar-bottom{margin-top:auto;display:flex;flex-direction:column;gap:4px;padding-top:14px;border-top:1px solid var(--border);}
+.theme-btn{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--sub);font-size:12.5px;font-family:inherit;width:100%;transition:all 0.15s;}
+.theme-btn:hover{background:var(--card2);}
+.main{flex:1;display:flex;flex-direction:column;min-width:0;}
+.topbar{padding:16px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--sidebar);position:sticky;top:0;z-index:20;}
+.topbar-left{display:flex;flex-direction:column;gap:1px;}
+.topbar-title{font-size:15px;font-weight:700;color:var(--text);}
+.topbar-sub{font-size:11.5px;color:var(--sub);}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.notif-btn{width:34px;height:34px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--sub);cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;transition:all 0.15s;}
+.notif-btn:hover{background:var(--card2);color:var(--text);}
+.notif-dot{position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--red);border:1.5px solid var(--sidebar);}
+.curator-chip{display:flex;align-items:center;gap:7px;padding:5px 10px 5px 5px;border-radius:20px;background:var(--card2);border:1px solid var(--border);cursor:pointer;text-decoration:none;transition:all 0.15s;}
+.curator-chip:hover{border-color:var(--border2);}
+.curator-avatar{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--amber),color-mix(in srgb,var(--amber) 50%,transparent));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;}
+.curator-name{font-size:12px;font-weight:600;color:var(--text);}
+.curator-role{font-size:10px;color:var(--sub);}
+.body{padding:22px 24px;flex:1;overflow-y:auto;}
+.section-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:16px;}
+.section-head{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.section-title{font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px;}
+.section-count{font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;background:var(--card2);color:var(--sub);border:1px solid var(--border);}
+.section-action{font-size:11.5px;color:var(--accent);cursor:pointer;font-weight:500;background:none;border:none;font-family:inherit;text-decoration:none;}
+.section-action:hover{text-decoration:underline;}
+.status-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:600;white-space:nowrap;}
+.status-active{background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border);}
+.status-pending{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border);}
+.status-new{background:var(--indigo-bg);color:var(--indigo);border:1px solid var(--indigo-border);}
+.status-inactive{background:var(--card2);color:var(--sub);border:1px solid var(--border);}
+.btn{padding:7px 14px;border-radius:8px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.15s;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{filter:brightness(1.1);}
+.btn-secondary{background:transparent;border:1px solid var(--border);color:var(--sub);}
+.btn-secondary:hover{border-color:var(--border2);color:var(--text);background:var(--card2);}
+.action-btn{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--sub);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;font-size:13px;}
+.action-btn:hover{background:var(--accent-bg);border-color:var(--accent-border);color:var(--accent);}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+@media(max-width:700px){.sidebar{width:56px;}.logo-text,.logo-badge,.nav-item span:not(:first-child),.nav-section{display:none;}.logo{justify-content:center;}.nav-item{justify-content:center;padding:8px;}}
+
+/* ── Analytics specific ── */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.kpi-card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:16px 18px;display:flex;flex-direction:column;gap:8px;transition:border-color 0.3s;}
+.kpi-card.live-pulse{border-color:var(--accent-border);animation:pulse-border 1s ease-out;}
+@keyframes pulse-border{0%{border-color:var(--accent);box-shadow:0 0 0 3px rgba(16,185,129,0.15);}100%{border-color:var(--accent-border);box-shadow:none;}}
+.kpi-val{font-size:26px;font-weight:700;letter-spacing:-0.5px;line-height:1;}
+.kpi-label{font-size:11.5px;color:var(--sub);}
+.kpi-delta{font-size:11px;font-weight:600;padding:2px 7px;border-radius:6px;display:inline-block;width:fit-content;}
+.kpi-delta.up{background:var(--accent-bg);color:var(--accent);}
+.analytics-grid{display:grid;grid-template-columns:2fr 1fr;gap:16px;}
+.chart-wrap{padding:16px 18px 8px;position:relative;}
+.chart-canvas-box{height:180px;position:relative;}
+.chart-legend{padding:0 18px 16px;display:flex;gap:14px;font-size:11px;color:var(--sub);}
+.chart-legend span{display:flex;align-items:center;gap:4px;}
+.legend-dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
+.stat-row{padding:10px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.stat-row:last-child{border-bottom:none;}
+
+/* Live feed */
+.live-feed{display:flex;flex-direction:column;gap:0;}
+.live-item{display:flex;align-items:center;gap:10px;padding:9px 18px;border-bottom:1px solid var(--border);animation:slide-in 0.35s ease;}
+.live-item:last-child{border-bottom:none;}
+@keyframes slide-in{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
+.live-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--indigo),color-mix(in srgb,var(--indigo) 50%,transparent));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;}
+.live-name{font-size:12.5px;font-weight:600;color:var(--text);flex:1;}
+.live-time{font-size:11px;color:var(--sub);}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0;box-shadow:0 0 5px var(--accent);}
+.conn-bar{display:flex;align-items:center;gap:7px;padding:8px 18px;border-bottom:1px solid var(--border);font-size:11px;color:var(--sub);}
+.conn-indicator{width:7px;height:7px;border-radius:50%;background:var(--sub);flex-shrink:0;}
+.conn-indicator.connected{background:var(--accent);box-shadow:0 0 5px var(--accent);}
+.skeleton{background:linear-gradient(90deg,var(--card2) 25%,var(--card3) 50%,var(--card2) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:6px;height:14px;}
+@keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+
+/* Config modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.modal-overlay.hidden{display:none;}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:24px;width:440px;max-width:95vw;}
+.modal h2{font-size:14px;font-weight:700;margin-bottom:16px;}
+.modal label{font-size:11.5px;color:var(--sub);display:block;margin-bottom:4px;margin-top:12px;}
+.modal input{width:100%;padding:8px 12px;border-radius:8px;border:1px solid var(--border2);background:var(--card2);color:var(--text);font-size:12.5px;font-family:inherit;outline:none;}
+.modal input:focus{border-color:var(--accent-border);}
+.modal-actions{display:flex;gap:8px;margin-top:20px;justify-content:flex-end;}
+.config-note{font-size:11px;color:var(--sub);margin-top:8px;line-height:1.5;}
+</style>
+</head>
+<body>
+
+<!-- Config Modal -->
+<div class="modal-overlay" id="configModal">
+  <div class="modal">
+    <h2>⚙️ Настройка Supabase</h2>
+    <label>Supabase URL</label>
+    <input type="text" id="cfgUrl" placeholder="https://xxxxxx.supabase.co"/>
+    <label>Anon Key</label>
+    <input type="text" id="cfgKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6Ikp..."/>
+    <label>Таблица волонтёров</label>
+    <input type="text" id="cfgTable" placeholder="profiles" value="profiles"/>
+    <label>Поле с именем</label>
+    <input type="text" id="cfgName" placeholder="full_name" value="full_name"/>
+    <label>Поле даты регистрации</label>
+    <input type="text" id="cfgDate" placeholder="created_at" value="created_at"/>
+    <label>Таблица часов</label>
+    <input type="text" id="cfgHours" placeholder="volunteer_hours" value="volunteer_hours"/>
+    <p class="config-note">URL и ключ можно найти в Supabase → Settings → API. Данные сохраняются в localStorage.</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeConfig()">Отмена</button>
+      <button class="btn btn-primary" onclick="saveConfig()">Сохранить и подключить</button>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-box">☀️</div>
+    <div class="logo-text">Sun Proactive <span class="logo-badge">Куратор</span></div>
+  </div>
+  <div class="nav-section">Главное</div>
+  <a class="nav-item" href="curator-dashboard.html"><span>🏠</span><span>Дашборд</span></a>
+  <a class="nav-item" href="curator-tasks.html"><span>📋</span><span>Лента задач</span></a>
+  <a class="nav-item" href="curator-applications.html"><span>📥</span><span>Отклики</span><span class="badge">5</span></a>
+  <div class="nav-section">Управление</div>
+  <a class="nav-item" href="curator-volunteers.html"><span>👥</span><span>Волонтёры</span><span class="badge green" id="nav-count">24</span></a>
+  <a class="nav-item" href="curator-events.html"><span>📅</span><span>Мероприятия</span></a>
+  <a class="nav-item active" href="curator-analytics.html"><span>📊</span><span>Аналитика</span></a>
+  <div class="nav-section">Настройки</div>
+  <a class="nav-item" href="curator-profile.html"><span>👤</span><span>Мой профиль</span></a>
+  <a class="nav-item" href="curator-settings.html"><span>⚙️</span><span>Настройки</span></a>
+  <div class="sidebar-bottom">
+    <button class="theme-btn" onclick="toggleTheme()">
+      <svg id="theme-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <span>Светлая тема</span>
+    </button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-title">Аналитика</div>
+      <div class="topbar-sub">Sun Proactive · Алматы · Апрель 2026</div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-secondary" style="font-size:11px;" onclick="openConfig()">⚙️ Supabase</button>
+      <button class="notif-btn" title="Уведомления">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <div class="notif-dot"></div>
+      </button>
+      <a class="curator-chip" href="curator-profile.html">
+        <div class="curator-avatar">АК</div>
+        <div>
+          <div class="curator-name">Айгерим К.</div>
+          <div class="curator-role">Куратор</div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <div class="body">
+
+    <!-- KPI row -->
+    <div class="kpi-row">
+      <div class="kpi-card" id="kpi-hours">
+        <div style="font-size:20px;">⏱️</div>
+        <div class="kpi-val" style="color:var(--accent)" id="val-hours">—</div>
+        <div class="kpi-label">Часов в апреле</div>
+        <div class="kpi-delta up" id="delta-hours">загрузка…</div>
+      </div>
+      <div class="kpi-card" id="kpi-vols">
+        <div style="font-size:20px;">👥</div>
+        <div class="kpi-val" id="val-vols">—</div>
+        <div class="kpi-label">Активных волонтёров</div>
+        <div class="kpi-delta up" id="delta-vols">загрузка…</div>
+      </div>
+      <div class="kpi-card">
+        <div style="font-size:20px;">✅</div>
+        <div class="kpi-val">18</div>
+        <div class="kpi-label">Задач завершено</div>
+        <div class="kpi-delta up">+5 к прошлому мес.</div>
+      </div>
+      <div class="kpi-card">
+        <div style="font-size:20px;">🤖</div>
+        <div class="kpi-val">79%</div>
+        <div class="kpi-label">Средний AI-скор</div>
+        <div class="kpi-delta up">+4% к марту</div>
+      </div>
+    </div>
+
+    <div class="analytics-grid">
+
+      <!-- Chart card -->
+      <div class="section-card">
+        <div class="section-head">
+          <div class="section-title">📈 Часы волонтёрства и новые участники</div>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <select id="chartPeriod" style="background:var(--card2);border:1px solid var(--border);color:var(--sub);border-radius:7px;padding:4px 8px;font-size:11px;font-family:inherit;cursor:pointer;" onchange="switchPeriod(this.value)">
+              <option value="weeks">По неделям</option>
+              <option value="days">По дням (14д)</option>
+              <option value="months">По месяцам</option>
+            </select>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <div class="chart-canvas-box">
+            <canvas id="mainChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-legend">
+          <span><span class="legend-dot" style="background:var(--accent);"></span>Часов</span>
+          <span><span class="legend-dot" style="background:var(--indigo);"></span>Новые участники</span>
+        </div>
+      </div>
+
+      <!-- Right column -->
+      <div>
+        <!-- Live feed -->
+        <div class="section-card" style="margin-bottom:16px;">
+          <div class="section-head">
+            <div class="section-title">🟢 Новые участники</div>
+            <span class="section-count" id="new-today-count">сегодня 0</span>
+          </div>
+          <div class="conn-bar">
+            <div class="conn-indicator" id="conn-indicator"></div>
+            <span id="conn-label">Подключение…</span>
+          </div>
+          <div class="live-feed" id="live-feed">
+            <!-- items injected here -->
+            <div style="padding:16px 18px;font-size:12px;color:var(--sub);">Ожидаем данные…</div>
+          </div>
+        </div>
+
+        <!-- Top volunteers -->
+        <div class="section-card" style="margin-bottom:16px;">
+          <div class="section-head"><div class="section-title">🏆 Топ волонтёры</div></div>
+          <div id="top-vols">
+            <div class="stat-row"><span class="skeleton" style="width:80px;"></span><span class="skeleton" style="width:60px;"></span></div>
+            <div class="stat-row"><span class="skeleton" style="width:90px;"></span><span class="skeleton" style="width:60px;"></span></div>
+            <div class="stat-row"><span class="skeleton" style="width:70px;"></span><span class="skeleton" style="width:60px;"></span></div>
+            <div class="stat-row"><span class="skeleton" style="width:85px;"></span><span class="skeleton" style="width:60px;"></span></div>
+          </div>
+        </div>
+
+        <!-- By category -->
+        <div class="section-card">
+          <div class="section-head"><div class="section-title">🏷️ По категориям</div></div>
+          <div class="stat-row"><span style="font-size:12px;color:var(--sub);">🌿 Экология</span><span style="font-size:12px;color:var(--text);font-weight:600;">98 ч</span></div>
+          <div class="stat-row"><span style="font-size:12px;color:var(--sub);">🐾 Животные</span><span style="font-size:12px;color:var(--text);font-weight:600;">72 ч</span></div>
+          <div class="stat-row"><span style="font-size:12px;color:var(--sub);">📚 Образование</span><span style="font-size:12px;color:var(--text);font-weight:600;">64 ч</span></div>
+          <div class="stat-row"><span style="font-size:12px;color:var(--sub);">📱 Медиа</span><span style="font-size:12px;color:var(--text);font-weight:600;">48 ч</span></div>
+          <div class="stat-row"><span style="font-size:12px;color:var(--sub);">🎨 Искусство</span><span style="font-size:12px;color:var(--text);font-weight:600;">30 ч</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /body -->
+</div><!-- /main -->
+</div><!-- /layout -->
+
+<script>
+/* ===================== THEME ===================== */
+let isDark = true;
+function toggleTheme() {
+  isDark = !isDark;
+  document.body.classList.toggle('light', !isDark);
+  document.querySelector('.theme-btn span').textContent = isDark ? 'Светлая тема' : 'Тёмная тема';
+  const icon = document.getElementById('theme-icon');
+  icon.innerHTML = isDark
+    ? '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
+    : '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+  if (window._chart) updateChartColors();
+}
+
+/* ===================== CONFIG ===================== */
+const DEFAULT_CFG = {
+  url: '', key: '',
+  table: 'profiles',
+  nameField: 'full_name',
+  dateField: 'created_at',
+  hoursTable: 'volunteer_hours'
+};
+let cfg = { ...DEFAULT_CFG };
+
+function loadConfig() {
+  try { Object.assign(cfg, JSON.parse(localStorage.getItem('sp_analytics_cfg') || '{}')); } catch(e){}
+}
+function saveConfig() {
+  cfg.url   = document.getElementById('cfgUrl').value.trim().replace(/\/$/, '');
+  cfg.key   = document.getElementById('cfgKey').value.trim();
+  cfg.table = document.getElementById('cfgTable').value.trim() || 'profiles';
+  cfg.nameField = document.getElementById('cfgName').value.trim() || 'full_name';
+  cfg.dateField = document.getElementById('cfgDate').value.trim() || 'created_at';
+  cfg.hoursTable = document.getElementById('cfgHours').value.trim() || 'volunteer_hours';
+  localStorage.setItem('sp_analytics_cfg', JSON.stringify(cfg));
+  closeConfig();
+  initAll();
+}
+function openConfig() {
+  document.getElementById('cfgUrl').value   = cfg.url;
+  document.getElementById('cfgKey').value   = cfg.key;
+  document.getElementById('cfgTable').value = cfg.table;
+  document.getElementById('cfgName').value  = cfg.nameField;
+  document.getElementById('cfgDate').value  = cfg.dateField;
+  document.getElementById('cfgHours').value = cfg.hoursTable;
+  document.getElementById('configModal').classList.remove('hidden');
+}
+function closeConfig() {
+  document.getElementById('configModal').classList.add('hidden');
+}
+
+/* ===================== SUPABASE REST ===================== */
+async function sbFetch(path, params = {}) {
+  if (!cfg.url || !cfg.key) return null;
+  const url = new URL(`${cfg.url}/rest/v1/${path}`);
+  Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
+  const r = await fetch(url, {
+    headers: {
+      'apikey': cfg.key,
+      'Authorization': `Bearer ${cfg.key}`,
+      'Accept': 'application/json',
+      'Prefer': 'count=exact'
+    }
+  });
+  if (!r.ok) return null;
+  const data = await r.json();
+  const count = parseInt(r.headers.get('content-range')?.split('/')[1] || '0');
+  return { data, count };
+}
+
+/* ===================== SUPABASE REALTIME ===================== */
+let realtimeWs = null;
+function connectRealtime() {
+  if (!cfg.url || !cfg.key) {
+    setConn(false, 'Не настроено — нажмите ⚙️ Supabase');
+    return;
+  }
+  if (realtimeWs) { try { realtimeWs.close(); } catch(e){} }
+
+  const wsUrl = cfg.url.replace('https://', 'wss://').replace('http://', 'ws://') + '/realtime/v1/websocket?apikey=' + cfg.key + '&vsn=1.0.0';
+  setConn(false, 'Подключение…');
+
+  try {
+    realtimeWs = new WebSocket(wsUrl);
+  } catch(e) {
+    setConn(false, 'Ошибка WebSocket');
+    return;
+  }
+
+  realtimeWs.onopen = () => {
+    setConn(true, 'Live · Supabase Realtime');
+    // Join channel for the profiles table
+    realtimeWs.send(JSON.stringify({
+      topic: `realtime:public:${cfg.table}`,
+      event: 'phx_join',
+      payload: { config: { broadcast: { self: true }, postgres_changes: [{ event: 'INSERT', schema: 'public', table: cfg.table }] } },
+      ref: '1'
+    }));
+    // Heartbeat
+    setInterval(() => {
+      if (realtimeWs && realtimeWs.readyState === 1) {
+        realtimeWs.send(JSON.stringify({ topic: 'phoenix', event: 'heartbeat', payload: {}, ref: 'hb' }));
+      }
+    }, 25000);
+  };
+
+  realtimeWs.onmessage = (e) => {
+    try {
+      const msg = JSON.parse(e.data);
+      if (msg.event === 'postgres_changes' || (msg.payload && msg.payload.data && msg.payload.data.type === 'INSERT')) {
+        const record = msg.payload?.data?.record || msg.payload?.record;
+        if (record) onNewVolunteer(record);
+      }
+    } catch(err){}
+  };
+
+  realtimeWs.onclose = () => {
+    setConn(false, 'Отключено — переподключение…');
+    setTimeout(connectRealtime, 5000);
+  };
+
+  realtimeWs.onerror = () => {
+    setConn(false, 'Ошибка соединения');
+  };
+}
+
+function setConn(ok, label) {
+  document.getElementById('conn-indicator').className = 'conn-indicator' + (ok ? ' connected' : '');
+  document.getElementById('conn-label').textContent = label;
+}
+
+let newTodayCount = 0;
+function onNewVolunteer(record) {
+  newTodayCount++;
+  document.getElementById('new-today-count').textContent = `сегодня ${newTodayCount}`;
+
+  const name = record[cfg.nameField] || 'Новый участник';
+  const initials = name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  const timeStr = new Date().toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' });
+
+  const feed = document.getElementById('live-feed');
+  // Remove placeholder
+  const placeholder = feed.querySelector('div[style]');
+  if (placeholder) placeholder.remove();
+
+  const item = document.createElement('div');
+  item.className = 'live-item';
+  item.innerHTML = `
+    <div class="live-dot"></div>
+    <div class="live-avatar">${initials}</div>
+    <div class="live-name">${name}</div>
+    <div class="live-time">${timeStr}</div>
+  `;
+  feed.insertBefore(item, feed.firstChild);
+
+  // Max 8 items
+  while (feed.children.length > 8) feed.removeChild(feed.lastChild);
+
+  // Pulse KPI
+  const kpiCard = document.getElementById('kpi-vols');
+  kpiCard.classList.remove('live-pulse');
+  void kpiCard.offsetWidth;
+  kpiCard.classList.add('live-pulse');
+
+  // Update volunteer count
+  const valEl = document.getElementById('val-vols');
+  valEl.textContent = (parseInt(valEl.textContent) || 0) + 1;
+}
+
+/* ===================== LOAD DATA ===================== */
+async function loadKPI() {
+  // Volunteers count
+  const vols = await sbFetch(cfg.table, { select: 'id', limit: 1 });
+  if (vols !== null) {
+    document.getElementById('val-vols').textContent = vols.count;
+    document.getElementById('delta-vols').textContent = `всего ${vols.count}`;
+  } else {
+    document.getElementById('val-vols').textContent = '24';
+    document.getElementById('delta-vols').textContent = '+3 за неделю';
+  }
+
+  // Hours sum
+  const hrs = await sbFetch(cfg.hoursTable, { select: 'duration.sum()', limit: 1 });
+  if (hrs !== null && hrs.data && hrs.data[0]) {
+    const sum = hrs.data[0]['sum'] || 312;
+    document.getElementById('val-hours').textContent = Math.round(sum);
+    document.getElementById('delta-hours').textContent = `итого ${Math.round(sum)} ч`;
+  } else {
+    document.getElementById('val-hours').textContent = '312';
+    document.getElementById('delta-hours').textContent = '+18% к марту';
+  }
+}
+
+async function loadTopVols() {
+  const res = await sbFetch(cfg.table, { select: `id,${cfg.nameField}`, order: `${cfg.dateField}.desc`, limit: 4 });
+  const el = document.getElementById('top-vols');
+  if (!res || !res.data || !res.data.length) {
+    // Fallback
+    el.innerHTML = `
+      <div class="stat-row" style="cursor:pointer;" onclick="location.href='curator-volunteer-details.html?id=1'">
+        <span style="font-size:12.5px;font-weight:600;color:var(--text);">Алина С.</span>
+        <span style="font-size:12px;color:var(--accent);font-weight:700;">42 ч · 94%</span>
+      </div>
+      <div class="stat-row" style="cursor:pointer;" onclick="location.href='curator-volunteer-details.html?id=2'">
+        <span style="font-size:12.5px;font-weight:600;color:var(--text);">Данияр М.</span>
+        <span style="font-size:12px;color:var(--accent);font-weight:700;">31 ч · 87%</span>
+      </div>
+      <div class="stat-row" style="cursor:pointer;" onclick="location.href='curator-volunteer-details.html?id=5'">
+        <span style="font-size:12.5px;font-weight:600;color:var(--text);">Руслан А.</span>
+        <span style="font-size:12px;color:var(--amber);font-weight:700;">27 ч · 82%</span>
+      </div>
+      <div class="stat-row" style="cursor:pointer;" onclick="location.href='curator-volunteer-details.html?id=3'">
+        <span style="font-size:12.5px;font-weight:600;color:var(--text);">Зарина Н.</span>
+        <span style="font-size:12px;color:var(--amber);font-weight:700;">19 ч · 76%</span>
+      </div>`;
+    return;
+  }
+  el.innerHTML = res.data.map((v, i) => `
+    <div class="stat-row" style="cursor:pointer;" onclick="location.href='curator-volunteer-details.html?id=${v.id}'">
+      <span style="font-size:12.5px;font-weight:600;color:var(--text);">${v[cfg.nameField] || 'Волонтёр'}</span>
+      <span style="font-size:12px;color:${i<2?'var(--accent)':'var(--amber)'};font-weight:700;">#${i+1}</span>
+    </div>`).join('');
+}
+
+async function loadRecentJoins() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const res = await sbFetch(cfg.table, {
+    select: `${cfg.nameField},${cfg.dateField}`,
+    order: `${cfg.dateField}.desc`,
+    limit: 8
+  });
+  if (!res || !res.data) return;
+
+  const feed = document.getElementById('live-feed');
+  feed.innerHTML = '';
+  let todayN = 0;
+
+  res.data.forEach(v => {
+    const name = v[cfg.nameField] || 'Участник';
+    const initials = name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    const dt = new Date(v[cfg.dateField]);
+    const timeStr = dt.toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' });
+    if (dt >= today) todayN++;
+
+    const item = document.createElement('div');
+    item.className = 'live-item';
+    item.innerHTML = `
+      <div class="live-dot" style="opacity:0.4;box-shadow:none;"></div>
+      <div class="live-avatar">${initials}</div>
+      <div class="live-name">${name}</div>
+      <div class="live-time">${timeStr}</div>`;
+    feed.appendChild(item);
+  });
+
+  newTodayCount = todayN;
+  document.getElementById('new-today-count').textContent = `сегодня ${todayN}`;
+}
+
+/* ===================== CHART ===================== */
+// Static fallback data
+const CHART_DATA = {
+  weeks: {
+    labels: ['1–7 апр','8–14 апр','15–21 апр','22–28 апр','29–30 апр'],
+    hours:  [58, 74, 89, 65, 26],
+    members:[2, 4, 7, 8, 3]
+  },
+  days: {
+    labels: Array.from({length:14},(_,i)=>{const d=new Date(2026,3,17+i);return d.toLocaleDateString('ru',{day:'numeric',month:'short'});}),
+    hours:  [8,12,5,14,10,18,7,9,15,11,6,13,10,12],
+    members:[0,1,0,2,1,3,0,1,2,1,0,2,1,1]
+  },
+  months: {
+    labels:  ['Янв','Фев','Мар','Апр'],
+    hours:   [190,230,264,312],
+    members: [8,12,18,24]
+  }
+};
+let currentPeriod = 'weeks';
+
+function getCSS(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+
+function buildChart(period) {
+  const d = CHART_DATA[period];
+  const ctx = document.getElementById('mainChart').getContext('2d');
+  if (window._chart) window._chart.destroy();
+  const accent = '#10b981';
+  const indigo  = '#818cf8';
+  const textColor = getCSS('--text') || '#f0ede8';
+  const gridColor = getCSS('--border') || '#1e1e1e';
+
+  window._chart = new Chart(ctx, {
+    data: {
+      labels: d.labels,
+      datasets: [
+        {
+          type: 'bar',
+          label: 'Часов',
+          data: d.hours,
+          backgroundColor: 'rgba(16,185,129,0.18)',
+          borderColor: accent,
+          borderWidth: 1.5,
+          borderRadius: 5,
+          yAxisID: 'y'
+        },
+        {
+          type: 'line',
+          label: 'Новые участники',
+          data: d.members,
+          borderColor: indigo,
+          backgroundColor: 'rgba(129,140,248,0.08)',
+          borderWidth: 2,
+          pointRadius: 4,
+          pointBackgroundColor: indigo,
+          tension: 0.35,
+          fill: true,
+          yAxisID: 'y2'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1a1a1a',
+          borderColor: '#252525',
+          borderWidth: 1,
+          titleColor: '#f0ede8',
+          bodyColor: '#505050',
+          padding: 10
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#505050', font: { size: 10, family: 'DM Sans' } },
+          grid: { color: gridColor }
+        },
+        y: {
+          position: 'left',
+          ticks: { color: '#505050', font: { size: 10 } },
+          grid: { color: gridColor }
+        },
+        y2: {
+          position: 'right',
+          ticks: { color: indigo, font: { size: 10 } },
+          grid: { drawOnChartArea: false }
+        }
+      }
+    }
+  });
+}
+
+function switchPeriod(p) {
+  currentPeriod = p;
+  buildChart(p);
+}
+
+function updateChartColors() {
+  if (window._chart) { window._chart.destroy(); buildChart(currentPeriod); }
+}
+
+/* ===================== INIT ===================== */
+async function initAll() {
+  buildChart('weeks');
+  if (cfg.url && cfg.key) {
+    await Promise.all([loadKPI(), loadTopVols(), loadRecentJoins()]);
+    connectRealtime();
+  } else {
+    setConn(false, 'Настройте Supabase → нажмите ⚙️');
+    // Show fallback static top vols
+    loadTopVols();
+  }
+}
+
+loadConfig();
+
+// Auto-open config if not set
+if (!cfg.url || !cfg.key) {
+  // Small delay so page renders first
+  setTimeout(openConfig, 600);
+}
+
+document.addEventListener('DOMContentLoaded', initAll);
+</script>
+
+<script type="module">
+  try {
+    const { getMyProfile } = await import('./supabase-sync.js');
+    const profile = await getMyProfile();
+    if (profile) {
+      const nameEl = document.querySelector('.curator-name');
+      if (nameEl) nameEl.textContent = profile.full_name || 'Куратор';
+    }
+  } catch(e) { /* supabase-sync.js not found — ok */ }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Sun Proactive — Мероприятия</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#080808;--sidebar:#0d0d0d;--card:#141414;--card2:#1a1a1a;--card3:#111111;
+  --text:#f0ede8;--sub:#505050;--sub2:#3a3a3a;--border:#1e1e1e;--border2:#252525;
+  --accent:#10b981;--accent-bg:rgba(16,185,129,0.08);--accent-border:rgba(16,185,129,0.2);
+  --red:#ef4444;--red-bg:rgba(239,68,68,0.08);--red-border:rgba(239,68,68,0.2);
+  --amber:#f59e0b;--amber-bg:rgba(245,158,11,0.08);--amber-border:rgba(245,158,11,0.2);
+  --indigo:#818cf8;--indigo-bg:rgba(99,102,241,0.08);--indigo-border:rgba(99,102,241,0.2);
+  --shadow:0 2px 16px rgba(0,0,0,0.4);
+}
+body.light{
+  --bg:#f4f7f5;--sidebar:#ffffff;--card:#ffffff;--card2:#f0f5f2;--card3:#fafcfb;
+  --text:#111111;--sub:#9ca3af;--sub2:#d1d5db;--border:#e5ede9;--border2:#dce8e2;
+  --accent:#059669;--accent-bg:rgba(5,150,105,0.07);--accent-border:rgba(5,150,105,0.2);
+  --red:#dc2626;--red-bg:rgba(220,38,38,0.07);--red-border:rgba(220,38,38,0.2);
+  --amber:#d97706;--amber-bg:rgba(217,119,6,0.07);--amber-border:rgba(217,119,6,0.2);
+  --indigo:#4f46e5;--indigo-bg:rgba(79,70,229,0.07);--indigo-border:rgba(79,70,229,0.2);
+  --shadow:0 1px 8px rgba(0,0,0,0.07);
+}
+html,body{height:100%;font-family:'DM Sans','Helvetica Neue',sans-serif;background:var(--bg);color:var(--text);transition:background 0.3s,color 0.3s;}
+.layout{display:flex;min-height:100vh;}
+
+/* ─── Sidebar ──────────────────────────────────── */
+.sidebar{width:220px;min-height:100vh;background:var(--sidebar);border-right:1px solid var(--border);padding:20px 14px;display:flex;flex-direction:column;gap:2px;position:sticky;top:0;flex-shrink:0;}
+.logo{display:flex;align-items:center;gap:9px;padding:0 8px;margin-bottom:24px;}
+.logo-box{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 45%,transparent));display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.logo-text{font-size:13px;font-weight:700;color:var(--text);}
+.logo-badge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border);margin-left:2px;}
+.nav-section{font-size:10px;font-weight:700;color:var(--sub2);letter-spacing:0.8px;padding:0 8px;margin:14px 0 5px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:12.5px;font-weight:400;color:var(--sub);border:1px solid transparent;transition:all 0.15s;background:transparent;text-decoration:none;width:100%;}
+.nav-item.active{background:var(--accent-bg);color:var(--accent);font-weight:600;border-color:var(--accent-border);}
+.nav-item:hover:not(.active){background:var(--card2);color:var(--text);}
+.nav-item .badge{margin-left:auto;background:var(--red-bg);color:var(--red);border:1px solid var(--red-border);font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;}
+.nav-item .badge.green{background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border);}
+.sidebar-bottom{margin-top:auto;display:flex;flex-direction:column;gap:4px;padding-top:14px;border-top:1px solid var(--border);}
+.theme-btn{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--sub);font-size:12.5px;font-family:inherit;width:100%;transition:all 0.15s;}
+.theme-btn:hover{background:var(--card2);}
+
+/* ─── Main / Topbar ────────────────────────────── */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;}
+.topbar{padding:16px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--sidebar);position:sticky;top:0;z-index:20;}
+.topbar-left{display:flex;flex-direction:column;gap:1px;}
+.topbar-title{font-size:15px;font-weight:700;color:var(--text);}
+.topbar-sub{font-size:11.5px;color:var(--sub);}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.notif-btn{width:34px;height:34px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--sub);cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;transition:all 0.15s;}
+.notif-btn:hover{background:var(--card2);color:var(--text);}
+.notif-dot{position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--red);border:1.5px solid var(--sidebar);}
+.curator-chip{display:flex;align-items:center;gap:7px;padding:5px 10px 5px 5px;border-radius:20px;background:var(--card2);border:1px solid var(--border);cursor:pointer;text-decoration:none;transition:all 0.15s;}
+.curator-chip:hover{border-color:var(--border2);}
+.curator-avatar{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--amber),color-mix(in srgb,var(--amber) 50%,transparent));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;}
+.curator-name{font-size:12px;font-weight:600;color:var(--text);}
+.curator-role{font-size:10px;color:var(--sub);}
+.body{padding:22px 24px;flex:1;overflow-y:auto;}
+
+/* ─── Shared ───────────────────────────────────── */
+.btn{padding:7px 14px;border-radius:8px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.15s;display:inline-flex;align-items:center;gap:6px;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover:not(:disabled){filter:brightness(1.1);}
+.btn-primary:disabled{opacity:0.55;cursor:not-allowed;}
+.btn-secondary{background:transparent;border:1px solid var(--border);color:var(--sub);}
+.btn-secondary:hover{border-color:var(--border2);color:var(--text);background:var(--card2);}
+.status-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:600;white-space:nowrap;}
+.status-active{background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border);}
+.status-pending{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border);}
+.status-new{background:var(--indigo-bg);color:var(--indigo);border:1px solid var(--indigo-border);}
+.status-inactive{background:var(--card2);color:var(--sub);border:1px solid var(--border);}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+@media(max-width:700px){.sidebar{width:56px;}.logo-text,.logo-badge,.nav-item span:not(:first-child),.nav-section{display:none;}.logo{justify-content:center;}.nav-item{justify-content:center;padding:8px;}}
+
+/* ─── Events grid (existing styles, unchanged) ── */
+.events-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+.event-card{background:var(--card);border:1px solid var(--border);border-radius:13px;overflow:hidden;cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s;animation:cardIn 0.28s ease both;}
+@keyframes cardIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+.event-card:hover{border-color:var(--border2);box-shadow:var(--shadow);}
+.event-banner{height:80px;display:flex;align-items:center;justify-content:center;font-size:36px;}
+.event-body{padding:14px 16px;}
+.event-title{font-size:13.5px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.event-date{font-size:11.5px;color:var(--sub);margin-bottom:10px;}
+.event-meta{display:flex;gap:10px;font-size:11px;color:var(--sub);}
+.event-fill{height:3px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:10px;}
+.event-fill-inner{height:100%;border-radius:3px;}
+
+/* ─── Skeleton loader ──────────────────────────── */
+.skeleton-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+.skeleton-card{background:var(--card);border:1px solid var(--border);border-radius:13px;overflow:hidden;}
+.skeleton-banner{height:80px;background:var(--card2);}
+.skeleton-body{padding:14px 16px;display:flex;flex-direction:column;gap:8px;}
+.skeleton-line{height:12px;border-radius:6px;background:var(--card2);animation:shimmer 1.4s ease-in-out infinite;}
+.skeleton-line.w-70{width:70%;}
+.skeleton-line.w-50{width:50%;}
+.skeleton-line.w-40{width:40%;}
+@keyframes shimmer{0%,100%{opacity:0.4;}50%{opacity:0.9;}}
+
+/* ─── Empty state ──────────────────────────────── */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:64px 24px;text-align:center;gap:12px;}
+.empty-icon{width:64px;height:64px;border-radius:18px;background:var(--card2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:4px;}
+.empty-title{font-size:15px;font-weight:700;color:var(--text);}
+.empty-sub{font-size:12.5px;color:var(--sub);max-width:280px;line-height:1.5;}
+
+/* ─── Toolbar ──────────────────────────────────── */
+.toolbar{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+.events-count{font-size:12px;color:var(--sub);margin-left:auto;}
+
+/* ─── Modal overlay ────────────────────────────── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:flex-start;justify-content:flex-end;opacity:0;pointer-events:none;transition:opacity 0.22s ease;}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+
+/* ─── Slide-over panel ─────────────────────────── */
+.slideover{width:460px;max-width:100vw;height:100vh;background:var(--sidebar);border-left:1px solid var(--border);display:flex;flex-direction:column;transform:translateX(100%);transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);overflow:hidden;}
+.modal-overlay.open .slideover{transform:translateX(0);}
+
+.slideover-head{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.slideover-title{font-size:14px;font-weight:700;color:var(--text);}
+.slideover-close{width:30px;height:30px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--sub);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;line-height:1;transition:all 0.15s;font-family:inherit;}
+.slideover-close:hover{background:var(--card2);color:var(--text);}
+
+.slideover-body{flex:1;overflow-y:auto;padding:20px;}
+.slideover-footer{padding:16px 20px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0;}
+
+/* ─── Form fields ──────────────────────────────── */
+.field{margin-bottom:16px;}
+.field-label{font-size:11px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;display:flex;align-items:center;gap:4px;}
+.field-label .req{color:var(--red);}
+.field-input,
+.field-select,
+.field-textarea{width:100%;background:var(--card);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;font-family:inherit;outline:none;transition:border-color 0.15s,box-shadow 0.15s;appearance:none;}
+.field-input::placeholder,.field-textarea::placeholder{color:var(--sub2);}
+.field-input:focus,.field-select:focus,.field-textarea:focus{border-color:var(--accent-border);box-shadow:0 0 0 3px rgba(16,185,129,0.08);}
+.field-input.error,.field-select.error,.field-textarea.error{border-color:var(--red-border);}
+.field-error{font-size:11px;color:var(--red);margin-top:4px;}
+.field-textarea{resize:vertical;min-height:72px;}
+.field-row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+.field-select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23505050' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:30px;}
+
+/* ─── Submit states ─────────────────────────────── */
+.submit-idle{}
+.submit-loading .btn-submit-text{display:none;}
+.submit-loading .btn-submit-spinner{display:inline-block;}
+.btn-submit-spinner{display:none;width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ─── Toast notification ────────────────────────── */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--card);border:1px solid var(--border);border-radius:11px;padding:12px 16px;box-shadow:var(--shadow);font-size:13px;font-weight:500;color:var(--text);z-index:400;display:flex;align-items:center;gap:10px;transform:translateY(20px);opacity:0;transition:all 0.3s;pointer-events:none;max-width:320px;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.success .toast-icon{color:var(--accent);}
+.toast.error .toast-icon{color:var(--red);}
+.toast-icon{font-size:16px;flex-shrink:0;}
+.toast-msg{flex:1;line-height:1.35;}
+
+/* ─── Supabase config banner ────────────────────── */
+.config-banner{background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--amber);margin-bottom:16px;display:flex;align-items:center;gap:8px;line-height:1.4;}
+.config-banner strong{font-weight:700;}
+.config-banner.hidden{display:none;}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- ═══ SIDEBAR ═══ -->
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-box">☀️</div>
+    <div class="logo-text">Sun Proactive <span class="logo-badge">Куратор</span></div>
+  </div>
+  <div class="nav-section">Главное</div>
+  <a class="nav-item" href="curator-dashboard.html"><span>📊</span><span>Дашборд</span></a>
+  <a class="nav-item" href="curator-tasks.html"><span>📋</span><span>Лента задач</span></a>
+  <a class="nav-item" href="curator-applications.html"><span>📩</span><span>Отклики</span><span class="badge">5</span></a>
+  <div class="nav-section">Управление</div>
+  <a class="nav-item" href="curator-volunteers.html"><span>👥</span><span>Волонтёры</span><span class="badge green">24</span></a>
+  <a class="nav-item active" href="curator-events.html"><span>🗂️</span><span>Мероприятия</span></a>
+  <a class="nav-item" href="curator-analytics.html"><span>📈</span><span>Аналитика</span></a>
+  <div class="nav-section">Настройки</div>
+  <a class="nav-item" href="curator-profile.html"><span>👤</span><span>Мой профиль</span></a>
+  <a class="nav-item" href="curator-settings.html"><span>⚙️</span><span>Настройки</span></a>
+  <div class="sidebar-bottom">
+    <button class="theme-btn" onclick="toggleTheme()">
+      <svg id="theme-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <span>Светлая тема</span>
+    </button>
+  </div>
+</div>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-title">Мероприятия</div>
+      <div class="topbar-sub">Sun Proactive · Алматы · Апрель 2026</div>
+    </div>
+    <div class="topbar-right">
+      <button class="notif-btn" title="Уведомления">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <div class="notif-dot"></div>
+      </button>
+      <a class="curator-chip" href="curator-profile.html">
+        <div class="curator-avatar">АК</div>
+        <div>
+          <div class="curator-name">Айгерим К.</div>
+          <div class="curator-role">Куратор</div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <div class="body">
+
+    
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <button class="btn btn-primary" id="btn-new-event" onclick="openModal()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Новое мероприятие
+      </button>
+      <span class="events-count" id="events-count"></span>
+    </div>
+
+    <!-- Content area: skeleton → grid / empty -->
+    <div id="content-area"></div>
+
+  </div><!-- /body -->
+</div><!-- /main -->
+</div><!-- /layout -->
+
+<!-- ═══ MODAL SLIDE-OVER ═══ -->
+<div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="slideover" id="slideover">
+
+    <div class="slideover-head">
+      <div class="slideover-title">🗂️ Новое мероприятие</div>
+      <button class="slideover-close" onclick="closeModal()" aria-label="Закрыть">✕</button>
+    </div>
+
+    <div class="slideover-body">
+      <div id="form-error-banner" style="display:none;background:var(--red-bg);border:1px solid var(--red-border);border-radius:9px;padding:10px 14px;font-size:12.5px;color:var(--red);margin-bottom:16px;"></div>
+
+      <!-- Title -->
+      <div class="field">
+        <div class="field-label">Название <span class="req">*</span></div>
+        <input class="field-input" id="f-title" type="text" placeholder="Эко-субботник в парке Горького" maxlength="120" />
+        <div class="field-error" id="e-title"></div>
+      </div>
+
+      <!-- Description -->
+      <div class="field">
+        <div class="field-label">Описание</div>
+        <textarea class="field-textarea" id="f-description" placeholder="Краткое описание мероприятия, задачи волонтёров..." maxlength="600"></textarea>
+      </div>
+
+      <!-- Date + Status -->
+      <div class="field-row-2">
+        <div class="field">
+          <div class="field-label">Дата <span class="req">*</span></div>
+          <input class="field-input" id="f-date" type="date" />
+          <div class="field-error" id="e-date"></div>
+        </div>
+        <div class="field">
+          <div class="field-label">Статус</div>
+          <select class="field-select" id="f-status">
+            <option value="active">Активно</option>
+            <option value="pending">Готовится</option>
+            <option value="draft">Черновик</option>
+            <option value="closed">Завершено</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Start / End time -->
+      <div class="field-row-2">
+        <div class="field">
+          <div class="field-label">Начало</div>
+          <input class="field-input" id="f-start-time" type="time" />
+        </div>
+        <div class="field">
+          <div class="field-label">Конец</div>
+          <input class="field-input" id="f-end-time" type="time" />
+        </div>
+      </div>
+
+      <!-- Location -->
+      <div class="field">
+        <div class="field-label">Место</div>
+        <input class="field-input" id="f-location" type="text" placeholder="Парк Горького, Алматы" maxlength="200" />
+      </div>
+
+      <!-- Category -->
+      <div class="field">
+        <div class="field-label">Категория <span class="req">*</span></div>
+        <select class="field-select" id="f-category">
+          <option value="">— выбрать —</option>
+          <option value="ecology"> Экология</option>
+          <option value="animals"> Животные</option>
+          <option value="education"> Образование</option>
+          <option value="media"> Медиа</option>
+          <option value="art"> Искусство</option>
+          <option value="social"> Социальное</option>
+          <option value="health"> Здоровье</option>
+          <option value="sport"> Спорт</option>
+          <option value="other"> Другое</option>
+        </select>
+        <div class="field-error" id="e-category"></div>
+      </div>
+
+      <!-- Volunteers needed -->
+      <div class="field">
+        <div class="field-label">Волонтёров нужно <span class="req">*</span></div>
+        <input class="field-input" id="f-volunteers-needed" type="number" min="1" max="500" placeholder="12" />
+        <div class="field-error" id="e-volunteers"></div>
+      </div>
+
+    </div><!-- /slideover-body -->
+
+    <div class="slideover-footer">
+      <button class="btn btn-primary" id="btn-submit" onclick="submitForm()" style="flex:1;">
+        <span class="btn-submit-text">Создать мероприятие</span>
+        <span class="btn-submit-spinner"></span>
+      </button>
+      <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+    </div>
+
+  </div><!-- /slideover -->
+</div><!-- /modal-overlay -->
+
+<!-- ═══ TOAST ═══ -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toast-icon"></span>
+  <span class="toast-msg" id="toast-msg"></span>
+</div>
+
+<!-- ═══ SCRIPTS ═══ -->
+<script type="module">
+
+
+const SUPABASE_URL  = 'https://rluhddvevpmmiulisyuf.supabase.co';   
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJsdWhkZHZldnBtbWl1bGlzeXVmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDMzNTksImV4cCI6MjA5MDQxOTM1OX0.zEixUTeTPzVu-BFdcQryWFqBlQSTC_VM2srkl9zOkbM';
+const TABLE         = 'events';
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+const IS_CONFIGURED = SUPABASE_URL !== '' && SUPABASE_ANON !== 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJsdWhkZHZldnBtbWl1bGlzeXVmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDMzNTksImV4cCI6MjA5MDQxOTM1OX0.zEixUTeTPzVu-BFdcQryWFqBlQSTC_VM2srkl9zOkbM';
+if (IS_CONFIGURED) document.getElementById('config-banner').classList.add('hidden');
+
+// ── In-memory fallback store (used when Supabase is not configured) ──────────
+let localEvents = [
+  { id:'local-1', title:'Эко-субботник в парке Горького',  description:'Уборка и озеленение парка.',         date:'2026-04-05', start_time:'09:00', end_time:'14:00', location:'Парк Горького',      category:'ecology',   volunteers_needed:12, volunteers_count:8, status:'active'  },
+  { id:'local-2', title:'SMM для молодёжного фестиваля',   description:'Создание контента для фестиваля.',   date:'2026-04-12', start_time:null,    end_time:null,    location:'Онлайн',              category:'media',     volunteers_needed:3,  volunteers_count:1, status:'active'  },
+  { id:'local-3', title:'Уход за животными в приюте',      description:'Помощь в уходе за животными.',       date:'2026-04-10', start_time:'10:00', end_time:'16:00', location:'Приют «Доброта»',     category:'animals',   volunteers_needed:8,  volunteers_count:7, status:'active'  },
+  { id:'local-4', title:'Помощь в библиотеке для детей',   description:'Работа с детьми в библиотеке.',      date:'2026-04-18', start_time:'13:00', end_time:'17:00', location:'Центр. библиотека',   category:'education', volunteers_needed:5,  volunteers_count:2, status:'active'  },
+  { id:'local-5', title:'Фотосъёмка городских мурал',      description:'Документирование уличного арта.',    date:'2026-04-25', start_time:null,    end_time:null,    location:'Разные районы',       category:'art',       volunteers_needed:2,  volunteers_count:0, status:'active'  },
+  { id:'local-6', title:'Марафон по сбору одежды',         description:'Сбор одежды для нуждающихся.',       date:'2026-04-20', start_time:'09:00', end_time:'18:00', location:'Разные точки',        category:'social',    volunteers_needed:10, volunteers_count:5, status:'active'  },
+];
+
+// ── Supabase REST helpers ─────────────────────────────────────────────────────
+async function sbFetch(path, opts = {}) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    headers: {
+      'apikey': SUPABASE_ANON,
+      'Authorization': `Bearer ${SUPABASE_ANON}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation',
+      ...opts.headers,
+    },
+    ...opts,
+  });
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : null;
+  if (!res.ok) throw new Error(data?.message || data?.error || `HTTP ${res.status}`);
+  return data;
+}
+
+async function fetchEvents() {
+  if (!IS_CONFIGURED) return [...localEvents];
+  return await sbFetch(`${TABLE}?select=*&order=date.asc`);
+}
+
+async function insertEvent(payload) {
+  if (!IS_CONFIGURED) {
+    const ev = { ...payload, id: 'local-' + Date.now(), volunteers_count: 0, created_at: new Date().toISOString() };
+    localEvents.unshift(ev);
+    return ev;
+  }
+  const rows = await sbFetch(TABLE, { method: 'POST', body: JSON.stringify(payload) });
+  return Array.isArray(rows) ? rows[0] : rows;
+}
+
+// ── Category meta ─────────────────────────────────────────────────────────────
+const CAT = {
+  ecology:   { emoji:'🌿', color:'rgba(16,185,129',  label:'Экология'    },
+  animals:   { emoji:'🐾', color:'rgba(245,158,11',  label:'Животные'    },
+  education: { emoji:'📚', color:'rgba(6,182,212',   label:'Образование' },
+  media:     { emoji:'📱', color:'rgba(129,140,248', label:'Медиа'       },
+  art:       { emoji:'🎨', color:'rgba(236,72,153',  label:'Искусство'   },
+  social:    { emoji:'👕', color:'rgba(167,139,250', label:'Социальное'  },
+  health:    { emoji:'🏥', color:'rgba(239,68,68',   label:'Здоровье'    },
+  sport:     { emoji:'⚽', color:'rgba(59,130,246',  label:'Спорт'       },
+  other:     { emoji:'✨', color:'rgba(99,102,241',  label:'Другое'      },
+};
+
+const STATUS_LABEL = { active:'Активно', pending:'Готовится', draft:'Черновик', closed:'Завершено' };
+const STATUS_CLASS = { active:'status-active', pending:'status-pending', draft:'status-new', closed:'status-inactive' };
+
+function fillPct(event) {
+  if (!event.volunteers_needed) return 0;
+  return Math.round(((event.volunteers_count || 0) / event.volunteers_needed) * 100);
+}
+
+function fillColor(pct) {
+  if (pct >= 90) return 'var(--red)';
+  if (pct >= 60) return 'var(--amber)';
+  return 'var(--accent)';
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  try {
+    return new Date(dateStr).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' });
+  } catch { return dateStr; }
+}
+
+function formatTime(ev) {
+  if (ev.start_time && ev.end_time) return `${ev.start_time}–${ev.end_time}`;
+  if (ev.start_time) return `с ${ev.start_time}`;
+  return 'Гибкий';
+}
+
+// ── Render helpers ────────────────────────────────────────────────────────────
+function renderEventCard(ev) {
+  const cat = CAT[ev.category] || CAT.other;
+  const pct = fillPct(ev);
+  const col = fillColor(pct);
+  const statusCls = STATUS_CLASS[ev.status] || 'status-new';
+  const statusLbl = STATUS_LABEL[ev.status] || ev.status;
+  const timeStr   = formatTime(ev);
+  const locStr    = ev.location || '—';
+
+  return `
+  <div class="event-card" data-id="${ev.id}">
+    <div class="event-banner" style="background:linear-gradient(135deg,${cat.color},0.15),${cat.color},0.04));">
+      ${cat.emoji}
+    </div>
+    <div class="event-body">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:4px;">
+        <div class="event-title">${escHtml(ev.title)}</div>
+        <span class="status-badge ${statusCls}" style="font-size:10px;flex-shrink:0;">${statusLbl}</span>
+      </div>
+      <div class="event-date">📅 ${formatDate(ev.date)} · ${timeStr}</div>
+      <div class="event-meta">
+        <span>📍 ${escHtml(locStr)}</span>
+        <span>👥 ${ev.volunteers_count || 0}/${ev.volunteers_needed || '?'}</span>
+      </div>
+      <div class="event-fill"><div class="event-fill-inner" style="width:${pct}%;background:${col};"></div></div>
+    </div>
+  </div>`;
+}
+
+function renderSkeleton() {
+  return Array.from({length:6}).map(() => `
+  <div class="skeleton-card">
+    <div class="skeleton-banner"></div>
+    <div class="skeleton-body">
+      <div class="skeleton-line w-70"></div>
+      <div class="skeleton-line w-50"></div>
+      <div class="skeleton-line w-40"></div>
+    </div>
+  </div>`).join('');
+}
+
+function renderEmpty() {
+  return `
+  <div class="empty-state">
+    <div class="empty-icon">🗂️</div>
+    <div class="empty-title">Мероприятий пока нет</div>
+    <div class="empty-sub">Создайте первое мероприятие — волонтёры уже ждут интересных задач.</div>
+    <button class="btn btn-primary" onclick="openModal()" style="margin-top:4px;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Новое мероприятие
+    </button>
+  </div>`;
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Main render ───────────────────────────────────────────────────────────────
+let allEvents = [];
+
+async function loadEvents() {
+  const area = document.getElementById('content-area');
+  // show skeletons
+  area.innerHTML = `<div class="skeleton-grid">${renderSkeleton()}</div>`;
+
+  try {
+    allEvents = await fetchEvents();
+  } catch (err) {
+    area.innerHTML = `<div style="background:var(--red-bg);border:1px solid var(--red-border);border-radius:10px;padding:14px 18px;font-size:13px;color:var(--red);">⚠️ Не удалось загрузить мероприятия: ${escHtml(err.message)}</div>`;
+    return;
+  }
+
+  renderGrid();
+}
+
+function renderGrid() {
+  const area = document.getElementById('content-area');
+  const counter = document.getElementById('events-count');
+
+  if (!allEvents.length) {
+    area.innerHTML = renderEmpty();
+    counter.textContent = '';
+    return;
+  }
+
+  counter.textContent = `${allEvents.length} ${pluralEvents(allEvents.length)}`;
+  area.innerHTML = `<div class="events-grid">${allEvents.map(renderEventCard).join('')}</div>`;
+}
+
+function pluralEvents(n) {
+  if (n % 100 >= 11 && n % 100 <= 14) return 'мероприятий';
+  const m = n % 10;
+  if (m === 1) return 'мероприятие';
+  if (m >= 2 && m <= 4) return 'мероприятия';
+  return 'мероприятий';
+}
+
+// ── Modal open / close ────────────────────────────────────────────────────────
+window.openModal = function() {
+  clearForm();
+  document.getElementById('modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => document.getElementById('f-title').focus(), 280);
+};
+
+window.closeModal = function() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+};
+
+window.handleOverlayClick = function(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+};
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ── Form validation + submit ──────────────────────────────────────────────────
+function clearForm() {
+  ['f-title','f-description','f-date','f-start-time','f-end-time','f-location','f-volunteers-needed'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.value = ''; el.classList.remove('error'); }
+  });
+  document.getElementById('f-status').value   = 'active';
+  document.getElementById('f-category').value = '';
+  ['e-title','e-date','e-category','e-volunteers'].forEach(id => { document.getElementById(id).textContent = ''; });
+  document.getElementById('form-error-banner').style.display = 'none';
+  setSubmitState('idle');
+}
+
+function setSubmitState(state) {
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = (state === 'loading');
+  btn.closest('.slideover-footer').classList.toggle('submit-loading', state === 'loading');
+  btn.querySelector('.btn-submit-text').style.display  = state === 'loading' ? 'none'         : '';
+  btn.querySelector('.btn-submit-spinner').style.display = state === 'loading' ? 'inline-block' : 'none';
+}
+
+function validate() {
+  let ok = true;
+  const set = (id, errId, msg) => {
+    const el = document.getElementById(id);
+    const er = document.getElementById(errId);
+    if (msg) { el.classList.add('error'); er.textContent = msg; ok = false; }
+    else { el.classList.remove('error'); er.textContent = ''; }
+  };
+
+  const title = document.getElementById('f-title').value.trim();
+  set('f-title','e-title', !title ? 'Обязательное поле' : title.length < 3 ? 'Минимум 3 символа' : '');
+
+  const date = document.getElementById('f-date').value;
+  set('f-date','e-date', !date ? 'Укажите дату' : '');
+
+  const cat = document.getElementById('f-category').value;
+  set('f-category','e-category', !cat ? 'Выберите категорию' : '');
+
+  const vn = document.getElementById('f-volunteers-needed').value;
+  set('f-volunteers-needed','e-volunteers', !vn ? 'Укажите количество' : parseInt(vn) < 1 ? 'Минимум 1' : '');
+
+  return ok;
+}
+
+window.submitForm = async function() {
+  document.getElementById('form-error-banner').style.display = 'none';
+  if (!validate()) return;
+
+  setSubmitState('loading');
+
+  const payload = {
+    title:               document.getElementById('f-title').value.trim(),
+    description:         document.getElementById('f-description').value.trim() || null,
+    date:                document.getElementById('f-date').value,
+    start_time:          document.getElementById('f-start-time').value || null,
+    end_time:            document.getElementById('f-end-time').value   || null,
+    location:            document.getElementById('f-location').value.trim() || null,
+    category:            document.getElementById('f-category').value,
+    volunteers_needed:   parseInt(document.getElementById('f-volunteers-needed').value),
+    status:              document.getElementById('f-status').value,
+    volunteers_count:    0,
+  };
+
+  try {
+    const created = await insertEvent(payload);
+    // prepend to local array, re-render
+    allEvents.unshift(created);
+    renderGrid();
+    closeModal();
+    showToast('success', `✅ Мероприятие «${payload.title}» создано`);
+  } catch (err) {
+    setSubmitState('idle');
+    const banner = document.getElementById('form-error-banner');
+    banner.style.display = 'block';
+    banner.textContent   = `Ошибка: ${err.message}`;
+    showToast('error', '⚠️ Не удалось сохранить');
+  }
+};
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(type, msg) {
+  const toast = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  toast.className = `toast ${type}`;
+  // force reflow
+  toast.offsetHeight;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 3800);
+}
+
+// ── Theme ─────────────────────────────────────────────────────────────────────
+let isDark = true;
+window.toggleTheme = function() {
+  isDark = !isDark;
+  document.body.classList.toggle('light', !isDark);
+  document.querySelector('.theme-btn span').textContent = isDark ? 'Светлая тема' : 'Тёмная тема';
+  const icon = document.getElementById('theme-icon');
+  icon.innerHTML = isDark
+    ? '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
+    : '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+};
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+loadEvents();
+
+</script>
+</body>
+</html>
