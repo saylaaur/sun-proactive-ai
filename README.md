@@ -1,5 +1,5 @@
 # ☀️ Sun Proactive — Autonomous AI Infrastructure
-**Project for Decentrathon 5.0 Hackathon**
+**Project for AIS Hack 3.0**
 
 ## 💡 О проекте
 **Sun Proactive** — это интеллектуальная экосистема для автоматизации работы фонда «Sun». Система заменяет ручной труд кураторов на 4 автономных AI-агента, которые управляют задачами от создания до проверки результата.
