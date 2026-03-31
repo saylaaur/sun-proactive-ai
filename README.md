@@ -20,7 +20,3 @@
 * **Backend Developer:** Nurlankyzy Zhaniya — архитектура БД, API и интеграция Supabase.
 * **Frontend Developer:** Erkin Akzeinep — интерфейс Trust UI и визуализация аналитики.
 
-## 📦 Запуск
-1. Склонируйте репозиторий.
-2. Создайте файл `api_key.env` на основе предоставленного шаблона.
-3. Запустите: `pip install -r requirements.txt && uvicorn main:app --reload`.
