@@ -20,5 +20,6 @@
 * **Backend Developer:** Nurlankyzy Zhaniya — архитектура БД, API и интеграция Supabase.
 * **Frontend Developer:** Erkin Akzeinep — интерфейс Trust UI и визуализация аналитики.
 
-## Сcылка на Vercel
-* sun-proactive-ai.vercel.app
+## Запуск
+Скачайте все файлы и закиньте все в одну папку
+Далее запустите index.html в компиляторе.
